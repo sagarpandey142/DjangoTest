@@ -1,121 +1,156 @@
-// import React, { useState } from 'react';
-// import { Bar, Line, Pie, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
-// import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement, RadialLinearScale } from 'chart.js';
+import React, { useState } from "react";
+import {
+  Bar,
+  Line,
+  Doughnut,
+  Radar,
+  PolarArea,
+  Bubble,
+} from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { IoSettingsOutline, IoAddCircleOutline } from "react-icons/io5";
 
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   BarElement,
-//   PointElement,
-//   LineElement,
-//   ArcElement,
-//   RadialLinearScale,
-//   Title,
-//   Tooltip,
-//   Legend
-// );
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend
+);
 
-// const generateRandomData = (count) => Array.from({ length: count }, () => Math.floor(Math.random() * 100));
+const chartTypes = ["bar", "line", "doughnut", "radar", "polar", "bubble"];
 
-// const Dashboard = () => {
-//   const [barDataValues, setBarDataValues] = useState(generateRandomData(3));
-//   const [lineDataValues, setLineDataValues] = useState(generateRandomData(3));
-//   const [pieDataValues, setPieDataValues] = useState(generateRandomData(3));
-//   const [doughnutDataValues, setDoughnutDataValues] = useState(generateRandomData(3));
-//   const [radarDataValues, setRadarDataValues] = useState(generateRandomData(3));
-//   const [polarDataValues, setPolarDataValues] = useState(generateRandomData(3));
+const getRandomValues = (type) => {
+  if (type === "bubble") {
+    return [
+      { x: Math.random() * 10, y: Math.random() * 10, r: Math.random() * 10 },
+      { x: Math.random() * 20, y: Math.random() * 20, r: Math.random() * 15 },
+      { x: Math.random() * 30, y: Math.random() * 30, r: Math.random() * 20 },
+    ];
+  }
+  return Array.from({ length: 3 }, () => Math.floor(Math.random() * 50) + 10);
+};
 
-//   const handleInputChange = (event, setData) => {
-//     const values = event.target.value.split(',').map(Number);
-//     setData(values);
-//   };
+const Dashboard = () => {
+  const [charts, setCharts] = useState(Array(6).fill(null));
+  const [chartData, setChartData] = useState({});
+  const [inputValues, setInputValues] = useState({});
+  const [dropdownIndex, setDropdownIndex] = useState(null);
 
-//   const chartStyle = {
-//     border: '2px solid black',
-//     padding: '25px',
-//     margin: '10px',
-//     borderRadius: '10px',
-//     width: '400px',
-//     height: '400px',
-//     textAlign: 'center',
-//   };
+  const selectChart = (index) => {
+    const type = prompt("Enter chart type: bar, line, doughnut, radar, polar, bubble");
+    if (!chartTypes.includes(type)) return;
 
-//   // Speedometer State
-//   const [value, setValue] = useState(50); // Default speed value
+    const layout = prompt("Enter layout size: small or bigger");
+    if (!["small", "bigger"].includes(layout)) return;
 
-//   // Define colors for different ranges
-//   const COLORS = ["rgb(140, 214, 16)", "rgb(239, 198, 0)", "rgb(231, 24, 49)"];
+    const updatedCharts = [...charts];
+    updatedCharts[index] = { type, layout };
+    setCharts(updatedCharts);
+    setChartData({ ...chartData, [index]: getRandomValues(type) });
+  };
 
-//   // Determine color based on value
-//   const getColor = (val) => (val < 40 ? COLORS[0] : val < 80 ? COLORS[1] : COLORS[2]);
+  const changeLayout = (index, newLayout) => {
+    const updatedCharts = [...charts];
+    updatedCharts[index].layout = newLayout;
+    setCharts(updatedCharts);
+    setDropdownIndex(null);
+  };
 
-//   // Chart data for speedometer
-//   const speedometerData = {
-//     datasets: [
-//       {
-//         data: [value, 100 - value],
-//         backgroundColor: [getColor(value), "rgba(200,200,200,0.3)"],
-//         borderWidth: 0,
-//         cutout: "75%",
-//         circumference: 180,
-//         rotation: -90,
-//       },
-//     ],
-//   };
+  const handleInputChange = (event, index) => {
+    const value = event.target.value;
+    setInputValues({ ...inputValues, [index]: value });
+    setChartData({ ...chartData, [index]: value.split(",").map(Number) });
+  };
 
-//   // Custom plugin to add text in the center
-//   const textCenterPlugin = {
-//     id: "textCenter",
-//     beforeDraw: (chart) => {
-//       const { ctx, chartArea } = chart;
-//       ctx.save();
-//       ctx.font = "bold 22px Arial";
-//       ctx.fillStyle = getColor(value);
-//       ctx.textAlign = "center";
-//       ctx.fillText(`${value}%`, chartArea.width / 2, chartArea.height / 1.3);
-//       ctx.font = "14px Arial";
-//       ctx.fillStyle = "gray";
-//       ctx.fillText("CPU Utilization", chartArea.width / 2, chartArea.height / 1.1);
-//       ctx.restore();
-//     },
-//   };
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+      {charts.map((chart, index) => (
+        <div
+          key={index}
+          style={{
+            border: "2px solid black",
+            padding: "20px",
+            margin: "10px",
+            borderRadius: "10px",
+            width: chart?.layout === "bigger" ? "600px" : "450px",
+            height: "300px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            position: "relative",
+          }}
+        >
+          {!chart ? (
+            <IoAddCircleOutline
+              size={50}
+              onClick={() => selectChart(index)}
+              style={{ cursor: "pointer" }}
+            />
+          ) : (
+            <>
+              <div style={{ position: "absolute", top: 10, right: 10 }}>
+                <IoSettingsOutline
+                  onClick={() => setDropdownIndex(index)}
+                  style={{ cursor: "pointer" }}
+                />
+                {dropdownIndex === index && (
+                  <div style={{
+                    position: "absolute",
+                    right: 0,
+                    background: "white",
+                    border: "1px solid black",
+                    borderRadius: "5px",
+                    padding: "10px",
+                    width:"100px",
+                    zIndex: 10,
+                  }}>
+                    <div style={{ cursor: "pointer", padding: "5px" }} onClick={() => changeLayout(index, "small")}>
+                      Layout 1 (Small)
+                    </div>
+                    <div style={{ cursor: "pointer", padding: "5px" }} onClick={() => changeLayout(index, "bigger")}>
+                      Layout 2 (Bigger)
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="text"
+                placeholder="Enter values"
+                value={inputValues[index] || ""}
+                onChange={(e) => handleInputChange(e, index)}
+                style={{ marginBottom: "10px" }}
+              />
+              {chart.type === "bar" && <Bar data={{ labels: ["A", "B", "C"], datasets: [{ data: chartData[index] || [], backgroundColor: ["red", "blue", "yellow"] }] }} />}
+              {chart.type === "line" && <Line data={{ labels: ["Jan", "Feb", "Mar"], datasets: [{ data: chartData[index] || [], borderColor: "green" }] }} />}
+              {chart.type === "doughnut" && <Doughnut data={{ labels: ["X", "Y", "Z"], datasets: [{ data: chartData[index] || [], backgroundColor: ["#4285F4", "#FF7139", "#FFD43B"] }] }} />}
+              {chart.type === "radar" && <Radar data={{ labels: ["Run", "Swim", "Cycle"], datasets: [{ data: chartData[index] || [], borderColor: "red" }] }} />}
+              {chart.type === "polar" && <PolarArea data={{ labels: ["One", "Two", "Three"], datasets: [{ data: chartData[index] || [], backgroundColor: ["purple", "cyan", "pink"] }] }} />}
+              {chart.type === "bubble" && <Bubble data={{ datasets: [{ data: chartData[index] || [], backgroundColor: "blue" }] }} />}
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
-//   return (
-//     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-//       <div style={chartStyle}>
-//         <input type="text" placeholder="Enter values" onChange={(e) => handleInputChange(e, setBarDataValues)} />
-//         <Bar data={{ labels: ['Red', 'Blue', 'Yellow'], datasets: [{ label: 'Bar Chart', data: barDataValues, backgroundColor: ['red', 'blue', 'yellow'] }] }} />
-//       </div>
-//       <div style={chartStyle}>
-//         <input type="text" placeholder="Enter values" onChange={(e) => handleInputChange(e, setLineDataValues)} />
-//         <Line data={{ labels: ['Jan', 'Feb', 'Mar'], datasets: [{ label: 'Line Chart', data: lineDataValues, borderColor: 'green', fill: false }] }} />
-//       </div>
-
-//       {/* Speedometer Chart */}
-//       <div style={chartStyle}>
-//         <input 
-//           type="number" 
-//           value={value} 
-//           onChange={(e) => setValue(Number(e.target.value))} 
-//           style={{ marginBottom: "10px", textAlign: "center", padding: "5px" }} 
-//         />
-//         <Doughnut data={speedometerData} options={{ responsive: true, maintainAspectRatio: false }} plugins={[textCenterPlugin]} />
-//       </div>
-
-//       <div style={chartStyle}>
-//         <input type="text" placeholder="Enter values" onChange={(e) => handleInputChange(e, setDoughnutDataValues)} />
-//         <Doughnut data={{ labels: ['Chrome', 'Firefox', 'Safari'], datasets: [{ label: 'Doughnut Chart', data: doughnutDataValues, backgroundColor: ['#4285F4', '#FF7139', '#FFD43B'] }] }} />
-//       </div>
-//       <div style={chartStyle}>
-//         <input type="text" placeholder="Enter values" onChange={(e) => handleInputChange(e, setRadarDataValues)} />
-//         <Radar data={{ labels: ['Running', 'Swimming', 'Cycling'], datasets: [{ label: 'Radar Chart', data: radarDataValues, backgroundColor: 'rgba(255,99,132,0.2)', borderColor: 'red' }] }} />
-//       </div>
-//       <div style={chartStyle}>
-//         <input type="text" placeholder="Enter values" onChange={(e) => handleInputChange(e, setPolarDataValues)} />
-//         <PolarArea data={{ labels: ['A', 'B', 'C'], datasets: [{ label: 'Polar Area Chart', data: polarDataValues, backgroundColor: ['purple', 'cyan', 'pink'] }] }} />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
+export default Dashboard;
