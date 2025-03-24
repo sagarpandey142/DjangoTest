@@ -53,18 +53,19 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState({});
   const [inputValues, setInputValues] = useState({});
   const [dropdownIndex, setDropdownIndex] = useState(null);
+  const [chartSelection, setChartSelection] = useState({ index: null, type: null });
 
-  const selectChart = (index) => {
-    const type = prompt("Enter chart type: bar, line, doughnut, radar, polar, bubble");
-    if (!chartTypes.includes(type)) return;
+  const selectChartType = (index, type) => {
+    setChartSelection({ index, type });
+  };
 
-    const layout = prompt("Enter layout size: small or bigger");
-    if (!["small", "bigger"].includes(layout)) return;
-
+  const selectLayout = (layout) => {
+    if (chartSelection.index === null || !chartSelection.type) return;
     const updatedCharts = [...charts];
-    updatedCharts[index] = { type, layout };
+    updatedCharts[chartSelection.index] = { type: chartSelection.type, layout };
     setCharts(updatedCharts);
-    setChartData({ ...chartData, [index]: getRandomValues(type) });
+    setChartData({ ...chartData, [chartSelection.index]: getRandomValues(chartSelection.type) });
+    setChartSelection({ index: null, type: null });
   };
 
   const changeLayout = (index, newLayout) => {
@@ -100,11 +101,24 @@ const Dashboard = () => {
           }}
         >
           {!chart ? (
-            <IoAddCircleOutline
-              size={50}
-              onClick={() => selectChart(index)}
-              style={{ cursor: "pointer" }}
-            />
+            chartSelection.index === index ? (
+              <div>
+                <select onChange={(e) => selectLayout(e.target.value)}>
+                  <option value="">Select Layout</option>
+                  <option value="small">Layout 1 (Small)</option>
+                  <option value="bigger">Layout 2 (Bigger)</option>
+                </select>
+              </div>
+            ) : (
+              <div>
+                <select onChange={(e) => selectChartType(index, e.target.value)}>
+                  <option value="">Select Chart Type</option>
+                  {chartTypes.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+            )
           ) : (
             <>
               <div style={{ position: "absolute", top: 10, right: 10 }}>
