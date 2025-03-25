@@ -107,6 +107,9 @@ const Dashboard = () => {
             position: "relative",
           }}
         >
+          <button onClick={() => removeChart(index)} style={{ position: "absolute", top: 10, right: 10 }}>
+                <CiCircleMinus />
+              </button>
           {!chart.type ? (
             <select onChange={(e) => selectChartType(index, e.target.value)}>
               <option value="">Select Chart Type</option>
