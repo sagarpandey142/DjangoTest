@@ -61,8 +61,12 @@ const Dashboard = () => {
   };
 
   const removeChart = (index) => {
-    setCharts(charts.filter((_, i) => i !== index));
+    const isConfirmed = window.confirm("Are you sure you want to delete this chart?");
+    if (isConfirmed) {
+      setCharts(charts.filter((_, i) => i !== index));
+    }
   };
+  
 
   const selectChartType = (index, type) => {
     const updatedCharts = [...charts];
