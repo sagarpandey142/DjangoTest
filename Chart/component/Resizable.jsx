@@ -20,7 +20,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
+import { FaPlus } from "react-icons/fa";
 import { IoSettingsOutline, IoAddCircleOutline } from "react-icons/io5";
 import { CiCircleMinus } from "react-icons/ci";
 
@@ -165,8 +165,8 @@ const Dashboard = () => {
           )}
         </div>
       ))}
-      <button onClick={addChart} style={{ width: "100%", display: "flex", justifyContent: "flex-end", alignItems: "flex-end", padding: "1rem", marginTop: "15rem" }}>
-        + Add Chart
+      <button onClick={addChart} style={{ width: "100%", display: "flex", justifyContent: "flex-end", alignItems: "flex-end", padding: "2rem", marginTop: "17rem" }}>
+       <FaPlus/>
       </button>
     </div>
   );
