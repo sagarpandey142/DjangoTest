@@ -20,7 +20,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import { IoSettingsOutline, IoAddCircleOutline } from "react-icons/io5";
+import { CiCircleMinus } from "react-icons/ci";
 
 ChartJS.register(
   CategoryScale,
@@ -49,30 +51,35 @@ const getRandomValues = (type) => {
 };
 
 const Dashboard = () => {
-  const [charts, setCharts] = useState(Array(6).fill(null));
+  const [charts, setCharts] = useState([{ type: null, layout: null }]);
   const [chartData, setChartData] = useState({});
   const [inputValues, setInputValues] = useState({});
   const [dropdownIndex, setDropdownIndex] = useState(null);
-  const [chartSelection, setChartSelection] = useState({ index: null, type: null });
+
+  const addChart = () => {
+    setCharts([...charts, { type: null, layout: null }]);
+  };
+
+  const removeChart = (index) => {
+    setCharts(charts.filter((_, i) => i !== index));
+  };
 
   const selectChartType = (index, type) => {
-    setChartSelection({ index, type });
+    const updatedCharts = [...charts];
+    updatedCharts[index].type = type;
+    setCharts(updatedCharts);
   };
 
-  const selectLayout = (layout) => {
-    if (chartSelection.index === null || !chartSelection.type) return;
+  const selectLayout = (index, layout) => {
     const updatedCharts = [...charts];
-    updatedCharts[chartSelection.index] = { type: chartSelection.type, layout };
+    updatedCharts[index].layout = layout;
     setCharts(updatedCharts);
-    setChartData({ ...chartData, [chartSelection.index]: getRandomValues(chartSelection.type) });
-    setChartSelection({ index: null, type: null });
+    setChartData({ ...chartData, [index]: getRandomValues(updatedCharts[index].type) });
+    setDropdownIndex(null); // Close dropdown after selection
   };
 
-  const changeLayout = (index, newLayout) => {
-    const updatedCharts = [...charts];
-    updatedCharts[index].layout = newLayout;
-    setCharts(updatedCharts);
-    setDropdownIndex(null);
+  const toggleDropdown = (index) => {
+    setDropdownIndex(dropdownIndex === index ? null : index);
   };
 
   const handleInputChange = (event, index) => {
@@ -82,7 +89,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", overflow: "hidden" }}>
       {charts.map((chart, index) => (
         <div
           key={index}
@@ -91,7 +98,7 @@ const Dashboard = () => {
             padding: "20px",
             margin: "10px",
             borderRadius: "10px",
-            width: chart?.layout === "bigger" ? "600px" : "450px",
+            width: chart.layout === "bigger" ? "600px" : "450px",
             height: "300px",
             display: "flex",
             justifyContent: "center",
@@ -100,52 +107,21 @@ const Dashboard = () => {
             position: "relative",
           }}
         >
-          {!chart ? (
-            chartSelection.index === index ? (
-              <div>
-                <select onChange={(e) => selectLayout(e.target.value)}>
-                  <option value="">Select Layout</option>
-                  <option value="small">Layout 1 (Small)</option>
-                  <option value="bigger">Layout 2 (Bigger)</option>
-                </select>
-              </div>
-            ) : (
-              <div>
-                <select onChange={(e) => selectChartType(index, e.target.value)}>
-                  <option value="">Select Chart Type</option>
-                  {chartTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-            )
+          {!chart.type ? (
+            <select onChange={(e) => selectChartType(index, e.target.value)}>
+              <option value="">Select Chart Type</option>
+              {chartTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          ) : !chart.layout ? (
+            <select onChange={(e) => selectLayout(index, e.target.value)}>
+              <option value="">Select Layout</option>
+              <option value="small">Layout 1 (Small)</option>
+              <option value="bigger">Layout 2 (Bigger)</option>
+            </select>
           ) : (
             <>
-              <div style={{ position: "absolute", top: 10, right: 10 }}>
-                <IoSettingsOutline
-                  onClick={() => setDropdownIndex(index)}
-                  style={{ cursor: "pointer" }}
-                />
-                {dropdownIndex === index && (
-                  <div style={{
-                    position: "absolute",
-                    right: 0,
-                    background: "white",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                    padding: "10px",
-                    width:"100px",
-                    zIndex: 10,
-                  }}>
-                    <div style={{ cursor: "pointer", padding: "5px" }} onClick={() => changeLayout(index, "small")}>
-                      Layout 1 (Small)
-                    </div>
-                    <div style={{ cursor: "pointer", padding: "5px" }} onClick={() => changeLayout(index, "bigger")}>
-                      Layout 2 (Bigger)
-                    </div>
-                  </div>
-                )}
-              </div>
               <input
                 type="text"
                 placeholder="Enter values"
@@ -159,10 +135,39 @@ const Dashboard = () => {
               {chart.type === "radar" && <Radar data={{ labels: ["Run", "Swim", "Cycle"], datasets: [{ data: chartData[index] || [], borderColor: "red" }] }} />}
               {chart.type === "polar" && <PolarArea data={{ labels: ["One", "Two", "Three"], datasets: [{ data: chartData[index] || [], backgroundColor: ["purple", "cyan", "pink"] }] }} />}
               {chart.type === "bubble" && <Bubble data={{ datasets: [{ data: chartData[index] || [], backgroundColor: "blue" }] }} />}
+
+              {/* Buttons */}
+              <button onClick={() => removeChart(index)} style={{ position: "absolute", top: 10, right: 10 }}>
+                <CiCircleMinus />
+              </button>
+              <button onClick={() => toggleDropdown(index)} style={{ position: "absolute", top: 10, right: 40 }}>
+                <IoSettingsOutline />
+              </button>
+
+              {/* Dropdown */}
+              {dropdownIndex === index && (
+                <div style={{
+                  position: "absolute",
+                  top: "40px",
+                  right: "10px",
+                  background: "white",
+                  border: "1px solid black",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  zIndex: 10
+                }}>
+                  <p style={{ margin: 0, fontWeight: "bold" }}>Select Layout</p>
+                  <button onClick={() => selectLayout(index, "small")} style={{ display: "block", marginTop: "5px" }}>Layout 1 (Small)</button>
+                  <button onClick={() => selectLayout(index, "bigger")} style={{ display: "block", marginTop: "5px" }}>Layout 2 (Bigger)</button>
+                </div>
+              )}
             </>
           )}
         </div>
       ))}
+      <button onClick={addChart} style={{ width: "100%", display: "flex", justifyContent: "flex-end", alignItems: "flex-end", padding: "1rem", marginTop: "15rem" }}>
+        + Add Chart
+      </button>
     </div>
   );
 };
