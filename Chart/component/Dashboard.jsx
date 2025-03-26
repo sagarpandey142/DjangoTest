@@ -150,13 +150,16 @@ const Dashboard = () => {
                 onChange={(e) => updateChartData(index, "values", e.target.value)}
               />
 
-              {chart.type === "bar" && <Bar data={getChartData(chart)}  style={{height:"130px"}}/>} 
-              {chart.type === "line" && <Line data={getChartData(chart)} style={{height:"130px"}} />} 
-              {chart.type === "doughnut" && <Doughnut data={getChartData(chart)}  style={{height:"130px"}}/>} 
-              {chart.type === "radar" && <Radar data={getChartData(chart)} style={{height:"130px"}} />} 
-              {chart.type === "polar" && <PolarArea data={getChartData(chart)} style={{height:"280px"}} />} 
-              {chart.type === "bubble" && <Bubble data={getChartData(chart)}  style={{height:"130px"}}/>} 
-              {chart.type === "pie" && <Pie data={getChartData(chart)}  style={{height:"250px"}}/>} 
+<div style={{ height: "220px", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+  {chart.type === "bar" && <Bar data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "line" && <Line data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "doughnut" && <Doughnut data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "radar" && <Radar data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "polar" && <PolarArea data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "bubble" && <Bubble data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+  {chart.type === "pie" && <Pie data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
+</div>
+
             </>
           )}
         </div>
