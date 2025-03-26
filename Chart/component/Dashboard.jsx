@@ -58,8 +58,18 @@ const Dashboard = () => {
     const newCharts = [...charts];
     newCharts[index].data[field] = value.split(",");
     setCharts(newCharts);
-    updateBackend(newCharts);
+  
+    // Clear the previous timeout to avoid excessive API calls
+    if (newCharts[index].timeout) {
+      clearTimeout(newCharts[index].timeout);
+    }
+  
+    // Delay backend update by 1 second after user stops typing
+    newCharts[index].timeout = setTimeout(() => {
+      updateBackend(newCharts);
+    }, 1000);
   };
+  
 
   const updateLayout = (index, layout) => {
     
@@ -85,7 +95,7 @@ const Dashboard = () => {
         <div
           key={index}
           className="border-2 border-black p-4 m-4 rounded-lg relative"
-          style={{ width: chart.layout === "smaller" ? "300px" : "500px" }}
+          style={{ width: chart.layout === "smaller" ? "300px" : "500px",height:"400px" }}
             
         >
           <button onClick={() => removeChart(index)} className="text-red-500 mb-2">
@@ -125,25 +135,28 @@ const Dashboard = () => {
             </select>
           ) : (
             <>
-              <input
+            <input
                 className="border p-2 w-full mb-2"
                 type="text"
                 placeholder="Labels (comma-separated)"
-                onBlur={(e) => updateChartData(index, "labels", e.target.value)}
+                value={charts[index]?.data.labels?.join(",") || ""}
+                onChange={(e) => updateChartData(index, "labels", e.target.value)}
               />
               <input
                 className="border p-2 w-full mb-2"
                 type="text"
                 placeholder="Values (comma-separated)"
-                onBlur={(e) => updateChartData(index, "values", e.target.value)}
+                value={charts[index]?.data.values?.join(",") || ""}
+                onChange={(e) => updateChartData(index, "values", e.target.value)}
               />
-              {chart.type === "bar" && <Bar data={getChartData(chart)} />} 
-              {chart.type === "line" && <Line data={getChartData(chart)} />} 
-              {chart.type === "doughnut" && <Doughnut data={getChartData(chart)} />} 
-              {chart.type === "radar" && <Radar data={getChartData(chart)} />} 
-              {chart.type === "polar" && <PolarArea data={getChartData(chart)} />} 
-              {chart.type === "bubble" && <Bubble data={getChartData(chart)} />} 
-              {chart.type === "pie" && <Pie data={getChartData(chart)} />} 
+
+              {chart.type === "bar" && <Bar data={getChartData(chart)}  style={{height:"130px"}}/>} 
+              {chart.type === "line" && <Line data={getChartData(chart)} style={{height:"130px"}} />} 
+              {chart.type === "doughnut" && <Doughnut data={getChartData(chart)}  style={{height:"130px"}}/>} 
+              {chart.type === "radar" && <Radar data={getChartData(chart)} style={{height:"130px"}} />} 
+              {chart.type === "polar" && <PolarArea data={getChartData(chart)} style={{height:"280px"}} />} 
+              {chart.type === "bubble" && <Bubble data={getChartData(chart)}  style={{height:"130px"}}/>} 
+              {chart.type === "pie" && <Pie data={getChartData(chart)}  style={{height:"250px"}}/>} 
             </>
           )}
         </div>
