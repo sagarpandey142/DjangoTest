@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const fetchChartData = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/charts/${userId}`);
+      const response = await axios.get(`https://news-hq51.onrender.com/charts/${userId}`);
       console.log("data",response)
       setCharts(response.data.charts || []);
     } catch (error) {
@@ -27,7 +27,7 @@ const Dashboard = () => {
 
   const updateBackend = async (updatedCharts) => {
     try {
-      await axios.post(`http://localhost:5000/charts/${userId}`, { charts: updatedCharts });
+      await axios.post(`https://news-hq51.onrender.com/charts/${userId}`, { charts: updatedCharts });
     } catch (error) {
       console.error("Error updating chart data:", error);
     }
