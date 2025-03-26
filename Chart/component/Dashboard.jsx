@@ -1,103 +1,158 @@
-// import React from 'react';
-// import { Bar, Line, Pie, Doughnut, Radar, PolarArea } from 'react-chartjs-2';
-// import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement, RadialLinearScale } from 'chart.js';
+import React, { useState, useEffect } from "react";
+import { Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie } from "react-chartjs-2";
+import axios from "axios";
+import { FaPlus, FaCog } from "react-icons/fa";
+import { CiCircleMinus, CiRollingSuitcase } from "react-icons/ci";
 
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   BarElement,
-//   PointElement,
-//   LineElement,
-//   ArcElement,
-//   RadialLinearScale,
-//   Title,
-//   Tooltip,
-//   Legend
-// );
+const chartTypes = ["bar", "line", "doughnut", "radar", "polar", "bubble", "pie"];
 
-// const DATA_COUNT = 12;
-// const labels = [];
-// for (let i = 0; i < DATA_COUNT; ++i) {
-//   labels.push(i.toString());
-// }
-// const datapoints = [0, 20, 20, 60, 60, 120, NaN, 180, 120, 125, 105, 110, 170];
-// const data = {
-//   labels: labels,
-//   datasets: [
-//     {
-//       label: 'Cubic interpolation (monotone)',
-//       data: datapoints,
-//       borderColor: 'red',
-//       fill: false,
-//       cubicInterpolationMode: 'monotone',
-//       tension: 0.4
-//     }, {
-//       label: 'Cubic interpolation',
-//       data: datapoints,
-//       borderColor: 'blue',
-//       fill: false,
-//       tension: 0.4
-//     }, {
-//       label: 'Linear interpolation (default)',
-//       data: datapoints,
-//       borderColor: 'green',
-//       fill: false
-//     }
-//   ]
-// };
+const Dashboard = () => {
+  const [charts, setCharts] = useState([]);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const userId = 1;
 
-// const Dashboard = () => {
-//   const chartStyle = {
-//     border: '2px solid black',
-//     padding: '10px',
-//     margin: '10px',
-//     borderRadius: '10px',
-//     width: '400px',
-//     height: '400px'
-//   };
+  useEffect(() => {
+    fetchChartData();
+  }, []);
 
-//   const barData = {
-//     labels: ['Red', 'Blue', 'Yellow'],
-//     datasets: [{ label: 'Bar Chart', data: [12, 19, 3], backgroundColor: ['red', 'blue', 'yellow'] }]
-//   };
+  const fetchChartData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/charts/${userId}`);
+      console.log("data",response)
+      setCharts(response.data.charts || []);
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+    }
+  };
 
-//   const lineData = {
-//     labels: ['Jan', 'Feb', 'Mar'],
-//     datasets: [{ label: 'Line Chart', data: [3, 7, 4], borderColor: 'green', fill: false }]
-//   };
+  const updateBackend = async (updatedCharts) => {
+    try {
+      await axios.post(`http://localhost:5000/charts/${userId}`, { charts: updatedCharts });
+    } catch (error) {
+      console.error("Error updating chart data:", error);
+    }
+  };
 
-//   const pieData = {
-//     labels: ['Apple', 'Orange', 'Banana'],
-//     datasets: [{ label: 'Pie Chart', data: [10, 20, 30], backgroundColor: ['red', 'orange', 'yellow'] }]
-//   };
+  const addChart = () => {
+    const newCharts = [...charts, { type: null, data: { labels: [], values: [] }, layout: "bigger" }];
+    setCharts(newCharts);
+    updateBackend(newCharts);
+  };
 
-//   const doughnutData = {
-//     labels: ['Chrome', 'Firefox', 'Safari'],
-//     datasets: [{ label: 'Doughnut Chart', data: [40, 25, 35], backgroundColor: ['#4285F4', '#FF7139', '#FFD43B'] }]
-//   };
+  const removeChart = (index) => {
+    if (window.confirm("Are you sure you want to delete this chart?")) {
+      const newCharts = charts.filter((_, i) => i !== index);
+      setCharts(newCharts);
+      updateBackend(newCharts);
+    }
+  };
 
-//   const radarData = {
-//     labels: ['Running', 'Swimming', 'Cycling'],
-//     datasets: [{ label: 'Radar Chart', data: [5, 10, 8], backgroundColor: 'rgba(255,99,132,0.2)', borderColor: 'red' }]
-//   };
+  const selectChartType = (index, type) => {
+    const newCharts = [...charts];
+    newCharts[index].type = type;
+    setCharts(newCharts);
+    updateBackend(newCharts);
+  };
 
-//   const polarData = {
-//     labels: ['A', 'B', 'C'],
-//     datasets: [{ label: 'Polar Area Chart', data: [11, 16, 7], backgroundColor: ['purple', 'cyan', 'pink'] }]
-//   };
+  const updateChartData = (index, field, value) => {
+    const newCharts = [...charts];
+    newCharts[index].data[field] = value.split(",");
+    setCharts(newCharts);
+    updateBackend(newCharts);
+  };
 
-//   return (
-//     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-//       <div style={chartStyle}>
-//       <Line data={data} /></div>
-//       <div style={chartStyle}><Bar data={barData} /></div>
-//       <div style={chartStyle}><Line data={lineData} /></div>
-//       <div style={chartStyle}><Pie data={pieData} /></div>
-//       <div style={chartStyle}><Doughnut data={doughnutData} /></div>
-//       <div style={chartStyle}><Radar data={radarData} /></div>
-      
-//     </div>
-//   );
-// };
+  const updateLayout = (index, layout) => {
+    
+    const newCharts = [...charts];
+    newCharts[index].layout = layout;
+    setCharts(newCharts);
+    updateBackend(newCharts);
+  };
 
-// export default Dashboard;
+  const getChartData = (chart) => ({
+    labels: chart.data.labels || [],
+    datasets: [
+      {
+        data: chart.data.values?.map(Number) || [],
+        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      },
+    ],
+  });
+
+  return (
+    <div className="flex flex-wrap p-4">
+      {charts.map((chart, index) => (
+        <div
+          key={index}
+          className="border-2 border-black p-4 m-4 rounded-lg relative"
+          style={{ width: chart.layout === "smaller" ? "300px" : "500px" }}
+            
+        >
+          <button onClick={() => removeChart(index)} className="text-red-500 mb-2">
+            <CiCircleMinus size={20} />
+          </button>
+          <button
+            className="absolute top-2 right-2 text-gray-500"
+            onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+          >
+            <FaCog size={20} />
+          </button>
+          {openDropdown === index && (
+            <div className="absolute right-0 bg-white shadow-lg border rounded mt-2 z-10 p-2">
+              <button
+                onClick={() => updateLayout(index, "smaller")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                layout 1 ( smaller ) 
+              </button>
+              <button
+                onClick={() => updateLayout(index, "bigger")}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                layout 2  ( Bigger )
+              </button>
+            </div>
+          )}
+          {!chart.type ? (
+            <select
+              onChange={(e) => selectChartType(index, e.target.value)}
+              className="border p-2 rounded w-full mb-2"
+            >
+              <option value="">Select Chart Type</option>
+              {chartTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input
+                className="border p-2 w-full mb-2"
+                type="text"
+                placeholder="Labels (comma-separated)"
+                onBlur={(e) => updateChartData(index, "labels", e.target.value)}
+              />
+              <input
+                className="border p-2 w-full mb-2"
+                type="text"
+                placeholder="Values (comma-separated)"
+                onBlur={(e) => updateChartData(index, "values", e.target.value)}
+              />
+              {chart.type === "bar" && <Bar data={getChartData(chart)} />} 
+              {chart.type === "line" && <Line data={getChartData(chart)} />} 
+              {chart.type === "doughnut" && <Doughnut data={getChartData(chart)} />} 
+              {chart.type === "radar" && <Radar data={getChartData(chart)} />} 
+              {chart.type === "polar" && <PolarArea data={getChartData(chart)} />} 
+              {chart.type === "bubble" && <Bubble data={getChartData(chart)} />} 
+              {chart.type === "pie" && <Pie data={getChartData(chart)} />} 
+            </>
+          )}
+        </div>
+      ))}
+      <button onClick={addChart} className="bg-blue-500 text-white px-4 py-2 rounded flex h-fit ">
+        <FaPlus className="mr-2" />
+      </button>
+    </div>
+  );
+};
+
+export default Dashboard;
