@@ -15,12 +15,20 @@ const client = new Client({
     database: process.env.PG_DATABASE,
 });
 
+
+
 client.connect()
     .then(async () => {
-        console.log("✅Connected to PostgreSQL!");
+        console.log("Database connected");
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS charts (
+                user_id TEXT PRIMARY KEY,
+                charts JSONB NOT NULL
+            );
+        `);
 
     })
-    .catch(err => console.error("❌ Connection error", err.stack));
+    .catch(err => console.error(" Connection error", err.stack));
 
 // Get charts for a user
 app.get("/charts/:userId", async (req, res) => {
@@ -29,12 +37,11 @@ app.get("/charts/:userId", async (req, res) => {
         const result = await client.query("SELECT charts FROM charts WHERE user_id = $1", [userId]);
         res.json({ userId, charts: result.rows.length ? result.rows[0].charts : [] });
     } catch (error) {
-        console.error("❌ Error fetching charts:", error);
+        console.error(" Error fetching charts:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
-// Save or update a user's charts
 app.post("/charts/:userId", async (req, res) => {
     const { userId } = req.params;
     const { charts } = req.body;
@@ -46,13 +53,13 @@ app.post("/charts/:userId", async (req, res) => {
              DO UPDATE SET charts = EXCLUDED.charts`,
             [userId, JSON.stringify(charts)]
         );
-        res.json({ message: "✅ Charts saved successfully!" });
+        res.json({ message: " Charts saved successfully!" });
     } catch (error) {
-        console.error("❌ Error saving charts:", error);
+        console.error(" Error saving charts:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(` Server running on port ${PORT}`));

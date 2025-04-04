@@ -1,35 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GridLayout from 'react-grid-layout';
 import {
   Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie,
 } from 'react-chartjs-2';
-import { CiCircleMinus } from 'react-icons/ci';
-import { FaCog, FaPlus } from 'react-icons/fa';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  RadialLinearScale,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import axios from 'axios';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  RadialLinearScale,
+  Tooltip,
+  Legend
+);
 
 const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
+const BASE_URL = "http://localhost:5000";
+const userId = 2;
 
 const ChartDashboard = () => {
   const [charts, setCharts] = useState([]);
-  const [openDropdown, setOpenDropdown] = useState(null);
+
+  useEffect(() => {
+    const loadCharts = async () => {
+      const saved = await fetchCharts(userId);
+      setCharts(saved);
+    };
+    loadCharts();
+  }, []);
+
+  const fetchCharts = async (userId) => {
+    try {
+      const res = await axios.get(`${BASE_URL}/charts/${userId}`);
+      return res.data?.charts || [];
+    } catch (err) {
+      console.error("Fetch error:", err);
+      return [];
+    }
+  };
+
+  const saveCharts = async (charts) => {
+    try {
+      await axios.post(`${BASE_URL}/charts/${userId}`, { charts });
+    } catch (err) {
+      console.error("Save error:", err);
+    }
+  };
 
   const addChart = () => {
-    setCharts([...charts, { type: '', data: { labels: [], values: [] } }]);
+    const updated = [...charts, { type: '', data: { labels: [], values: [] }, size: 'bigger' }];
+    setCharts(updated);
+    saveCharts(updated);
   };
 
   const removeChart = (index) => {
-    console.log("index",index)
-    const updated = [...charts];
-    updated.splice(index, 1);
+    console.log("indexx",index)
+    const updated = charts.filter((_, i) => i !== index);
     setCharts(updated);
-    setOpenDropdown(null);
+    saveCharts(updated);
   };
 
   const selectChartType = (index, type) => {
     const updated = [...charts];
     updated[index].type = type;
     setCharts(updated);
+    saveCharts(updated);
   };
 
   const updateChartData = (index, field, value) => {
@@ -43,12 +97,7 @@ const ChartDashboard = () => {
     }
 
     setCharts(updated);
-  };
-
-  const updateLayout = (index, sizeType) => {
-    const updated = [...charts];
-    updated[index].size = sizeType;
-    setCharts(updated);
+    saveCharts(updated);
   };
 
   const getChartData = (chart) => ({
@@ -68,13 +117,11 @@ const ChartDashboard = () => {
   return (
     <div className="p-4">
       <GridLayout
-      
         className="layout"
         layout={charts.map((_, i) => ({
           i: i.toString(),
           x: (i * 2) % 12,
           y: Infinity,
-         
           w: charts[i]?.size === 'bigger' ? 6 : 4,
           h: charts[i]?.size === 'bigger' ? 7 : 8,
         }))}
@@ -88,32 +135,7 @@ const ChartDashboard = () => {
             className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
           >
            
-            {/* <button
-              className="absolute top-2 right-2 text-gray-500"
-              onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
-            >
-              <FaCog size={20} />
-            </button> */}
 
-           
-            {openDropdown === index && (
-              <div className="absolute right-0 bg-white shadow-lg border rounded mt-2 z-10 p-2">
-                <button
-                  onClick={() => updateLayout(index, 'smaller')}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                >
-                  layout 1 (smaller)
-                </button>
-                <button
-                  onClick={() => updateLayout(index, 'bigger')}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                >
-                  layout 2 (bigger)
-                </button>
-              </div>
-            )}
-
-          
             {!chart.type ? (
               <select
                 onChange={(e) => selectChartType(index, e.target.value)}
@@ -140,17 +162,15 @@ const ChartDashboard = () => {
                   value={charts[index]?.data.values?.join(',') || ''}
                   onChange={(e) => updateChartData(index, 'values', e.target.value)}
                 />
-
-              
-                <div className="w-full  flex items-center justify-center overflow-hidden">
+                <div className="w-full flex items-center justify-center overflow-hidden">
                   <div className="w-full h-full">
-                    {chart.type === 'bar' && <Bar data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'line' && <Line data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'doughnut' && <Doughnut data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'radar' && <Radar data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'polar' && <PolarArea data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'bubble' && <Bubble data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
-                    {chart.type === 'pie' && <Pie data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'bar' && <Bar key={`bar-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'line' && <Line key={`line-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'doughnut' && <Doughnut key={`doughnut-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'radar' && <Radar key={`radar-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'polar' && <PolarArea key={`polar-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'bubble' && <Bubble key={`bubble-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'pie' && <Pie key={`pie-${index}`} data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
                   </div>
                 </div>
               </>
@@ -159,7 +179,6 @@ const ChartDashboard = () => {
         ))}
       </GridLayout>
 
-     
       <button onClick={addChart} className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4">
         <FaPlus className="mr-2" /> Add Chart
       </button>

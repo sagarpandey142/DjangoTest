@@ -1,182 +1,131 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import GridLayout from 'react-grid-layout';
 import {
-  Bar,
-  Line,
-  Doughnut,
-  Radar,
-  PolarArea,
-  Bubble,
-} from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { FaPlus } from "react-icons/fa";
-import { IoSettingsOutline, IoAddCircleOutline } from "react-icons/io5";
-import { CiCircleMinus } from "react-icons/ci";
+  Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie,
+} from 'react-chartjs-2';
+import { FaPlus } from 'react-icons/fa';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend
-);
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
-const chartTypes = ["bar", "line", "doughnut", "radar", "polar", "bubble"];
+const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 
-const getRandomValues = (type) => {
-  if (type === "bubble") {
-    return [
-      { x: Math.random() * 10, y: Math.random() * 10, r: Math.random() * 10 },
-      { x: Math.random() * 20, y: Math.random() * 20, r: Math.random() * 15 },
-      { x: Math.random() * 30, y: Math.random() * 30, r: Math.random() * 20 },
-    ];
-  }
-  return Array.from({ length: 3 }, () => Math.floor(Math.random() * 50) + 10);
-};
-
-const Dashboard = () => {
-  const [charts, setCharts] = useState([{ type: null, layout: null }]);
-  const [chartData, setChartData] = useState({});
-  const [inputValues, setInputValues] = useState({});
-  const [dropdownIndex, setDropdownIndex] = useState(null);
+const ChartDashboard = () => {
+  const [charts, setCharts] = useState([]);
 
   const addChart = () => {
-    setCharts([...charts, { type: null, layout: null }]);
+    const defaultData = {
+      type: '',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar'],
+        values: [10, 20, 30],
+      },
+    };
+    setCharts([...charts, defaultData]);
   };
-
-  const removeChart = (index) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this chart?");
-    if (isConfirmed) {
-      setCharts(charts.filter((_, i) => i !== index));
-    }
-  };
-  
 
   const selectChartType = (index, type) => {
-    const updatedCharts = [...charts];
-    updatedCharts[index].type = type;
-    setCharts(updatedCharts);
+    const updated = [...charts];
+    updated[index].type = type;
+    setCharts(updated);
   };
 
-  const selectLayout = (index, layout) => {
-    const updatedCharts = [...charts];
-    updatedCharts[index].layout = layout;
-    setCharts(updatedCharts);
-    setChartData({ ...chartData, [index]: getRandomValues(updatedCharts[index].type) });
-    setDropdownIndex(null); // Close dropdown after selection
+  const updateChartData = (index, field, value) => {
+    const updated = [...charts];
+    const values = value.split(',').map((item) => item.trim());
+
+    if (field === 'labels') {
+      updated[index].data.labels = values;
+    } else if (field === 'values') {
+      updated[index].data.values = values.map(Number);
+    }
+
+    setCharts(updated);
   };
 
-  const toggleDropdown = (index) => {
-    setDropdownIndex(dropdownIndex === index ? null : index);
-  };
+  const getChartData = (chart) => ({
+    labels: chart.data.labels,
+    datasets: [
+      {
+        label: 'Dataset',
+        data: chart.data.values,
+        backgroundColor: [
+          '#4dc9f6', '#f67019', '#f53794',
+          '#537bc4', '#acc236', '#166a8f', '#00a950',
+        ],
+      },
+    ],
+  });
 
-  const handleInputChange = (event, index) => {
-    const value = event.target.value;
-    setInputValues({ ...inputValues, [index]: value });
-    setChartData({ ...chartData, [index]: value.split(",").map(Number) });
-  };
+  const layout = [];
+  charts.forEach((_, i) => {
+    layout.push(
+      { i: `${i}-title`, x: 0, y: i * 3, w: 12, h: 1 },
+      { i: `${i}-form`, x: 0, y: i * 3 + 1, w: 12, h: 2 },
+      { i: `${i}-chart`, x: 0, y: i * 3 + 2, w: 12, h: 6 }
+    );
+  });
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", overflow: "hidden" }}>
+    <div className="p-4">
+      <GridLayout className="layout" layout={layout} cols={12} rowHeight={30} width={1200}>
       {charts.map((chart, index) => (
-        <div
-          key={index}
-          style={{
-            border: "2px solid black",
-            padding: "20px",
-            margin: "10px",
-            borderRadius: "10px",
-            width: chart.layout === "bigger" ? "600px" : "450px",
-            height: "300px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-            position: "relative",
-          }}
-        >
-          <button onClick={() => removeChart(index)} style={{ position: "absolute", top: 10, right: 10 }}>
-                <CiCircleMinus />
-              </button>
-          {!chart.type ? (
-            <select onChange={(e) => selectChartType(index, e.target.value)}>
-              <option value="">Select Chart Type</option>
-              {chartTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          ) : !chart.layout ? (
-            <select onChange={(e) => selectLayout(index, e.target.value)}>
-              <option value="">Select Layout</option>
-              <option value="small">Layout 1 (Small)</option>
-              <option value="bigger">Layout 2 (Bigger)</option>
-            </select>
-          ) : (
-            <>
-              <input
-                type="text"
-                placeholder="Enter values"
-                value={inputValues[index] || ""}
-                onChange={(e) => handleInputChange(e, index)}
-                style={{ marginBottom: "10px" }}
-              />
-              {chart.type === "bar" && <Bar data={{ labels: ["A", "B", "C"], datasets: [{ data: chartData[index] || [], backgroundColor: ["red", "blue", "yellow"] }] }} />}
-              {chart.type === "line" && <Line data={{ labels: ["Jan", "Feb", "Mar"], datasets: [{ data: chartData[index] || [], borderColor: "green" }] }} />}
-              {chart.type === "doughnut" && <Doughnut data={{ labels: ["X", "Y", "Z"], datasets: [{ data: chartData[index] || [], backgroundColor: ["#4285F4", "#FF7139", "#FFD43B"] }] }} />}
-              {chart.type === "radar" && <Radar data={{ labels: ["Run", "Swim", "Cycle"], datasets: [{ data: chartData[index] || [], borderColor: "red" }] }} />}
-              {chart.type === "polar" && <PolarArea data={{ labels: ["One", "Two", "Three"], datasets: [{ data: chartData[index] || [], backgroundColor: ["purple", "cyan", "pink"] }] }} />}
-              {chart.type === "bubble" && <Bubble data={{ datasets: [{ data: chartData[index] || [], backgroundColor: "blue" }] }} />}
+  <React.Fragment key={index}>
+    {/* Title Card */}
+    <div key={`${index}-title`} className="border-2 border-black p-2 bg-gray-100 rounded-lg">
+      <h2 className="text-xl font-semibold">Chart {index + 1}</h2>
+    </div>
 
-              {/* Buttons */}
-              <button onClick={() => removeChart(index)} style={{ position: "absolute", top: 10, right: 10 }}>
-                <CiCircleMinus />
-              </button>
-              <button onClick={() => toggleDropdown(index)} style={{ position: "absolute", top: 10, right: 40 }}>
-                <IoSettingsOutline />
-              </button>
+    {/* Form Card */}
+    <div key={`${index}-form`} className="border p-4 rounded bg-white">
+      <select
+        onChange={(e) => selectChartType(index, e.target.value)}
+        value={chart.type}
+        className="border p-2 rounded w-full mb-2"
+      >
+        <option value="">Select Chart Type</option>
+        {chartTypes.map((type) => (
+          <option key={type} value={type}>{type}</option>
+        ))}
+      </select>
 
-              {/* Dropdown */}
-              {dropdownIndex === index && (
-                <div style={{
-                  position: "absolute",
-                  top: "40px",
-                  right: "10px",
-                  background: "white",
-                  border: "1px solid black",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  zIndex: 10
-                }}>
-                  <p style={{ margin: 0, fontWeight: "bold" }}>Select Layout</p>
-                  <button onClick={() => selectLayout(index, "small")} style={{ display: "block", marginTop: "5px" }}>Layout 1 (Small)</button>
-                  <button onClick={() => selectLayout(index, "bigger")} style={{ display: "block", marginTop: "5px" }}>Layout 2 (Bigger)</button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      ))}
-      <button onClick={addChart} style={{ width: "100%", display: "flex", justifyContent: "flex-end", alignItems: "flex-end", padding: "2rem", marginTop: "17rem" }}>
-       <FaPlus/>
+      <input
+        className="border p-2 w-full mb-2"
+        type="text"
+        placeholder="Labels (comma-separated)"
+        value={chart.data.labels.join(',')}
+        onChange={(e) => updateChartData(index, 'labels', e.target.value)}
+      />
+      <input
+        className="border p-2 w-full"
+        type="text"
+        placeholder="Values (comma-separated)"
+        value={chart.data.values.join(',')}
+        onChange={(e) => updateChartData(index, 'values', e.target.value)}
+      />
+    </div>
+
+    {/* Chart Display Card */}
+    <div key={`${index}-chart`} className="border p-4 rounded bg-white overflow-hidden">
+  {chart.type === 'bar' && <Bar key={`bar-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'line' && <Line key={`line-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'doughnut' && <Doughnut key={`doughnut-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'radar' && <Radar key={`radar-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'polar' && <PolarArea key={`polar-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'bubble' && <Bubble key={`bubble-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+  {chart.type === 'pie' && <Pie key={`pie-${index}`} data={getChartData(chart)} options={{ responsive: true, maintainAspectRatio: false }} />}
+</div>
+
+  </React.Fragment>
+))}
+
+      </GridLayout>
+
+      <button onClick={addChart} className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4">
+        <FaPlus className="mr-2" /> Add Chart
       </button>
     </div>
   );
 };
 
-export default Dashboard;
+export default ChartDashboard;
