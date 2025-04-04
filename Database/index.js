@@ -17,7 +17,7 @@ const client = new Client({
 
 client.connect()
     .then(async () => {
-        console.log("✅ Connected to PostgreSQL!");
+        console.log("✅Connected to PostgreSQL!");
 
     })
     .catch(err => console.error("❌ Connection error", err.stack));

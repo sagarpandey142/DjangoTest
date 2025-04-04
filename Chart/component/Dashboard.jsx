@@ -1,174 +1,170 @@
-import React, { useState, useEffect } from "react";
-import { Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie } from "react-chartjs-2";
-import axios from "axios";
-import { FaPlus, FaCog } from "react-icons/fa";
-import { CiCircleMinus, CiRollingSuitcase } from "react-icons/ci";
+import React, { useState } from 'react';
+import GridLayout from 'react-grid-layout';
+import {
+  Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie,
+} from 'react-chartjs-2';
+import { CiCircleMinus } from 'react-icons/ci';
+import { FaCog, FaPlus } from 'react-icons/fa';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
-const chartTypes = ["bar", "line", "doughnut", "radar", "polar", "bubble", "pie"];
+const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 
-const Dashboard = () => {
+const ChartDashboard = () => {
   const [charts, setCharts] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const userId = 1;
-
-  useEffect(() => {
-    fetchChartData();
-  }, []);
-
-  const fetchChartData = async () => {
-    try {
-      const response = await axios.get(`https://news-hq51.onrender.com/charts/${userId}`);
-      console.log("data",response)
-      setCharts(response.data.charts || []);
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-    }
-  };
-
-  const updateBackend = async (updatedCharts) => {
-    try {
-      await axios.post(`https://news-hq51.onrender.com/charts/${userId}`, { charts: updatedCharts });
-    } catch (error) {
-      console.error("Error updating chart data:", error);
-    }
-  };
 
   const addChart = () => {
-    const newCharts = [...charts, { type: null, data: { labels: [], values: [] }, layout: "bigger" }];
-    setCharts(newCharts);
-    updateBackend(newCharts);
+    setCharts([...charts, { type: '', data: { labels: [], values: [] } }]);
   };
 
   const removeChart = (index) => {
-    if (window.confirm("Are you sure you want to delete this chart?")) {
-      const newCharts = charts.filter((_, i) => i !== index);
-      setCharts(newCharts);
-      updateBackend(newCharts);
-    }
+    console.log("index",index)
+    const updated = [...charts];
+    updated.splice(index, 1);
+    setCharts(updated);
+    setOpenDropdown(null);
   };
 
   const selectChartType = (index, type) => {
-    const newCharts = [...charts];
-    newCharts[index].type = type;
-    setCharts(newCharts);
-    updateBackend(newCharts);
+    const updated = [...charts];
+    updated[index].type = type;
+    setCharts(updated);
   };
 
   const updateChartData = (index, field, value) => {
-    const newCharts = [...charts];
-    newCharts[index].data[field] = value.split(",");
-    setCharts(newCharts);
-  
-    // Clear the previous timeout to avoid excessive API calls
-    if (newCharts[index].timeout) {
-      clearTimeout(newCharts[index].timeout);
-    }
-  
-    // Delay backend update by 1 second after user stops typing
-    newCharts[index].timeout = setTimeout(() => {
-      updateBackend(newCharts);
-    }, 1000);
-  };
-  
+    const updated = [...charts];
+    const values = value.split(',').map((item) => item.trim());
 
-  const updateLayout = (index, layout) => {
-    
-    const newCharts = [...charts];
-    newCharts[index].layout = layout;
-    setCharts(newCharts);
-    updateBackend(newCharts);
+    if (field === 'labels') {
+      updated[index].data.labels = values;
+    } else if (field === 'values') {
+      updated[index].data.values = values.map(Number);
+    }
+
+    setCharts(updated);
+  };
+
+  const updateLayout = (index, sizeType) => {
+    const updated = [...charts];
+    updated[index].size = sizeType;
+    setCharts(updated);
   };
 
   const getChartData = (chart) => ({
-    labels: chart.data.labels || [],
+    labels: chart.data.labels,
     datasets: [
       {
-        data: chart.data.values?.map(Number) || [],
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+        label: 'Dataset',
+        data: chart.data.values,
+        backgroundColor: [
+          '#4dc9f6', '#f67019', '#f53794',
+          '#537bc4', '#acc236', '#166a8f', '#00a950',
+        ],
       },
     ],
   });
 
   return (
-    <div className="flex flex-wrap p-4">
-      {charts.map((chart, index) => (
-        <div
-          key={index}
-          className="border-2 border-black p-4 m-4 rounded-lg relative"
-          style={{ width: chart.layout === "smaller" ? "300px" : "500px",height:"400px" }}
-            
-        >
-          <button onClick={() => removeChart(index)} className="text-red-500 mb-2">
-            <CiCircleMinus size={20} />
-          </button>
-          <button
-            className="absolute top-2 right-2 text-gray-500"
-            onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+    <div className="p-4">
+      <GridLayout
+      
+        className="layout"
+        layout={charts.map((_, i) => ({
+          i: i.toString(),
+          x: (i * 2) % 12,
+          y: Infinity,
+         
+          w: charts[i]?.size === 'bigger' ? 6 : 4,
+          h: charts[i]?.size === 'bigger' ? 7 : 8,
+        }))}
+        cols={12}
+        rowHeight={30}
+        width={1200}
+      >
+        {charts.map((chart, index) => (
+          <div
+            key={index.toString()}
+            className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
           >
-            <FaCog size={20} />
-          </button>
-          {openDropdown === index && (
-            <div className="absolute right-0 bg-white shadow-lg border rounded mt-2 z-10 p-2">
-              <button
-                onClick={() => updateLayout(index, "smaller")}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-              >
-                layout 1 ( smaller ) 
-              </button>
-              <button
-                onClick={() => updateLayout(index, "bigger")}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-              >
-                layout 2  ( Bigger )
-              </button>
-            </div>
-          )}
-          {!chart.type ? (
-            <select
-              onChange={(e) => selectChartType(index, e.target.value)}
-              className="border p-2 rounded w-full mb-2"
+           
+            {/* <button
+              className="absolute top-2 right-2 text-gray-500"
+              onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
             >
-              <option value="">Select Chart Type</option>
-              {chartTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          ) : (
-            <>
-            <input
-                className="border p-2 w-full mb-2"
-                type="text"
-                placeholder="Labels (comma-separated)"
-                value={charts[index]?.data.labels?.join(",") || ""}
-                onChange={(e) => updateChartData(index, "labels", e.target.value)}
-              />
-              <input
-                className="border p-2 w-full mb-2"
-                type="text"
-                placeholder="Values (comma-separated)"
-                value={charts[index]?.data.values?.join(",") || ""}
-                onChange={(e) => updateChartData(index, "values", e.target.value)}
-              />
+              <FaCog size={20} />
+            </button> */}
 
-<div style={{ height: "220px", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-  {chart.type === "bar" && <Bar data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "line" && <Line data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "doughnut" && <Doughnut data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "radar" && <Radar data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "polar" && <PolarArea data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "bubble" && <Bubble data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-  {chart.type === "pie" && <Pie data={getChartData(chart)} options={{ maintainAspectRatio: false }} />} 
-</div>
+           
+            {openDropdown === index && (
+              <div className="absolute right-0 bg-white shadow-lg border rounded mt-2 z-10 p-2">
+                <button
+                  onClick={() => updateLayout(index, 'smaller')}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  layout 1 (smaller)
+                </button>
+                <button
+                  onClick={() => updateLayout(index, 'bigger')}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  layout 2 (bigger)
+                </button>
+              </div>
+            )}
 
-            </>
-          )}
-        </div>
-      ))}
-      <button onClick={addChart} className="bg-blue-500 text-white px-4 py-2 rounded flex h-fit ">
-        <FaPlus className="mr-2" />
+          
+            {!chart.type ? (
+              <select
+                onChange={(e) => selectChartType(index, e.target.value)}
+                className="border p-2 rounded w-full mb-2"
+              >
+                <option value="">Select Chart Type</option>
+                {chartTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            ) : (
+              <>
+                <input
+                  className="border p-2 w-full mb-2"
+                  type="text"
+                  placeholder="Labels (comma-separated)"
+                  value={charts[index]?.data.labels?.join(',') || ''}
+                  onChange={(e) => updateChartData(index, 'labels', e.target.value)}
+                />
+                <input
+                  className="border p-2 w-full mb-2"
+                  type="text"
+                  placeholder="Values (comma-separated)"
+                  value={charts[index]?.data.values?.join(',') || ''}
+                  onChange={(e) => updateChartData(index, 'values', e.target.value)}
+                />
+
+              
+                <div className="w-full  flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-full">
+                    {chart.type === 'bar' && <Bar data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'line' && <Line data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'doughnut' && <Doughnut data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'radar' && <Radar data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'polar' && <PolarArea data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'bubble' && <Bubble data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                    {chart.type === 'pie' && <Pie data={getChartData(chart)} options={{ maintainAspectRatio: false, responsive: true }} />}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </GridLayout>
+
+     
+      <button onClick={addChart} className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4">
+        <FaPlus className="mr-2" /> Add Chart
       </button>
     </div>
   );
 };
 
-export default Dashboard;
+export default ChartDashboard;
