@@ -35,7 +35,7 @@ ChartJS.register(
 
 const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 const BASE_URL = "https://news-hq51.onrender.com";
-const userId = 10;
+const userId = 13;
 
 const ChartDashboard = () => {
   const [charts, setCharts] = useState([]);
