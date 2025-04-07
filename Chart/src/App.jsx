@@ -3,7 +3,7 @@ import { useState } from 'react'
 import './App.css'
 
 import Speedometer from '../component/Dashboard'
-import Dashboard from "../component/Resizable"
+import Dashboard from "../component/Gauge"
 function App() {
   const [count, setCount] = useState(0)
 

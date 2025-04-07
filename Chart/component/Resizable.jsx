@@ -20,6 +20,8 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import axios from 'axios';
 
+
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -34,7 +36,7 @@ ChartJS.register(
 );
 
 const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
-const BASE_URL = "https://news-hq51.onrender.com";
+const BASE_URL = "http://localhost:5000";
 const userId = 13;
 
 const ChartDashboard = () => {
@@ -156,6 +158,7 @@ const ChartDashboard = () => {
         cols={12}
         rowHeight={30}
         width={1200}
+        
       >
         {charts?.map((chart, index) => (
           <div
