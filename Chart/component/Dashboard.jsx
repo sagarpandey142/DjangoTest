@@ -33,7 +33,7 @@ ChartJS.register(
 );
 
 const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie', 'textbox', 'table'];
-const BASE_URL = "https://news-hq51.onrender.com";
+const BASE_URL = "http://localhost:5000";
 const userId = 17;
 
 const ChartDashboard = () => {
