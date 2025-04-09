@@ -32,14 +32,17 @@ ChartJS.register(
   Legend
 );
 
-const chartTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie', 'textbox', 'table'];
-const BASE_URL = "http://localhost:5000";
-const userId = 17;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const userId = import.meta.env.VITE_userId;
 
 const ChartDashboard = () => {
   const [charts, setCharts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedType, setSelectedType] = useState('');
+  const [primaryType, setPrimaryType] = useState('');
+  const [chartSubType, setChartSubType] = useState('');
+
+  const primaryTypes = ['chart', 'textbox', 'table'];
+  const chartSubTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 
   useEffect(() => {
     const loadCharts = async () => {
@@ -75,18 +78,19 @@ const ChartDashboard = () => {
   const addChart = (type) => {
     const groupId = Date.now();
     let newItems = [];
-    if (chartTypes.includes(type)) {
-      if (['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'].includes(type)) {
-        newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} });
-      } else if (type === 'textbox') {
-        newItems.push({ type, data: { text: '' }, size: 'bigger', groupId, layout: {} });
-      } else if (type === 'table') {
-        newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {} });
-      }
+    if (chartSubTypes.includes(type)) {
+      newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} });
+    } else if (type === 'textbox') {
+      newItems.push({ type, data: { text: '' }, size: 'bigger', groupId, layout: {} });
+    } else if (type === 'table') {
+      newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {} });
     }
     const updated = [...charts, ...newItems];
     setCharts(updated);
     saveCharts(updated);
+    setPrimaryType('');
+    setChartSubType('');
+    setShowDropdown(false);
   };
 
   const removeChartGroup = (groupId) => {
@@ -170,19 +174,21 @@ const ChartDashboard = () => {
             key={index.toString()}
             className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
           >
+          
+
             {chart.type === '' && (
               <select
                 onChange={(e) => selectChartType(index, e.target.value)}
                 className="border p-2 rounded w-full mb-2"
               >
                 <option value="">Select Chart Type</option>
-                {chartTypes.map((type) => (
+                {[...chartSubTypes, 'textbox', 'table'].map((type) => (
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
             )}
 
-            {['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'].includes(chart.type) && (
+            {chartSubTypes.includes(chart.type) && (
               <>
                 <input
                   className="border p-2 w-full mb-2"
@@ -249,21 +255,52 @@ const ChartDashboard = () => {
         ))}
       </GridLayout>
 
+     
       {showDropdown ? (
-        <select
-          onChange={(e) => {
-            addChart(e.target.value);
-            setShowDropdown(false);
-          }}
-          className="border p-2 rounded mt-4"
-        >
-          <option value="">Select Type to Add</option>
-          {chartTypes.map((type) => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
+        <div className="mt-4">
+          {!primaryType && (
+            <select
+              value={primaryType}
+              onChange={(e) => setPrimaryType(e.target.value)}
+              className="border p-2 rounded mr-2"
+            >
+              <option value="">Select Type</option>
+              {primaryTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          )}
+
+          {primaryType === 'chart' && !chartSubType && (
+            <select
+              value={chartSubType}
+              onChange={(e) => {
+                setChartSubType(e.target.value);
+                addChart(e.target.value);
+              }}
+              className="border p-2 rounded"
+            >
+              <option value="">Select Chart Type</option>
+              {chartSubTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          )}
+
+          {(primaryType === 'textbox' || primaryType === 'table') && (
+            <button
+              onClick={() => addChart(primaryType)}
+              className="bg-green-500 text-white px-4 py-2 rounded ml-2"
+            >
+              Add {primaryType}
+            </button>
+          )}
+        </div>
       ) : (
-        <button onClick={() => setShowDropdown(true)} className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4">
+        <button
+          onClick={() => setShowDropdown(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4"
+        >
           <FaPlus className="mr-2" /> Add
         </button>
       )}
