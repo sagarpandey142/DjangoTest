@@ -1,0 +1,15 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+  }
+  
+  body {
+    width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Utility replacements for Tailwind classes */
+
+#mainp{
+    overflow: hidden;
+}
