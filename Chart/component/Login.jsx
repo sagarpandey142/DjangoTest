@@ -11,7 +11,7 @@ const LoginPage = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     if (username === 'testing' && password === 'temp') {
-      navigate('/dashboard'); // redirect on success
+      navigate('/dashboard'); 
     } else {
       toast.error('Invalid credentials');
     }
