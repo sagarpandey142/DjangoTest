@@ -1,17 +1,17 @@
-import { useState } from 'react'
-
-import './App.css'
-
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from '../component/Login';
 import Dashboard from "../component/Testing"
-function App() {
-  const [count, setCount] = useState(0)
 
+function App() {
   return (
-      <div id='mainp' className=' overflow-x-hidden'>
-            <Dashboard/>
-      </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
