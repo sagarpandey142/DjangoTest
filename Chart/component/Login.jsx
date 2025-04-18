@@ -8,12 +8,31 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === 'testing' && password === 'temp') {
-      navigate('/dashboard'); 
-    } else {
-      toast.error('Invalid credentials');
+
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: username,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('user_id', data.user_id);
+        navigate('/dashboard');
+      } else {
+        toast.error(data.error || 'Invalid credentials');
+      }
+    } catch (error) {
+      toast.error('Server error. Please try again later.');
     }
   };
 
@@ -48,4 +67,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
