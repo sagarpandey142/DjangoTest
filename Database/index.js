@@ -134,7 +134,9 @@ const { Client } = require("pg");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin:"*"
+}));
 
 const client = new Client({
     host: process.env.PG_HOST,
