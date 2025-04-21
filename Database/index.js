@@ -7,7 +7,7 @@ const { Client } = require("pg");
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin:"*",
+    origin:"https://chart-1aow.vercel.app",
     credentials:true
 }));
 
