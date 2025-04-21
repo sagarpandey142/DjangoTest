@@ -24,23 +24,27 @@ function App() {
   const [chartData, setChartData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
-    axios.get(`${BASE_URL}/innerflap-min-chart`).then((res) => {
-      const { datasets, labels } = res.data.result;
+    const intervalId = setInterval(() => {
+      axios.get("http://localhost:5000/innerflap-min-chart").then((res) => {
+        const { datasets, labels } = res.data.result;
 
-      // Add colors if needed
-      const coloredDatasets = datasets.map((ds, i) => ({
-        ...ds,
-        borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
-        backgroundColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
-        tension: 0.3,
-        fill: false,
-      }));
+        // Map colors or any other styling options
+        const coloredDatasets = datasets.map((ds, i) => ({
+          ...ds,
+          borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
+          backgroundColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
+          tension: 0.3,
+          fill: false,
+        }));
 
-      setChartData({
-        labels,
-        datasets: coloredDatasets
+        setChartData({
+          labels,
+          datasets: coloredDatasets,
+        });
       });
-    });
+    }, 1000); // 5000ms = 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, []);
 
   return (
