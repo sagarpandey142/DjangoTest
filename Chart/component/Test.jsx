@@ -25,7 +25,7 @@ function App() {
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const intervalId = setInterval(() => {
-      axios.get("http://localhost:5000/innerflap-min-chart").then((res) => {
+      axios.get(`BASE_URL/innerflap-min-chart`).then((res) => {
         const { datasets, labels } = res.data.result;
 
         // Map colors or any other styling options
