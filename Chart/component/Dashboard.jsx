@@ -44,8 +44,8 @@ const ChartDashboard = () => {
   const containerRef = useRef(null);
 
   const primaryTypes = ['chart', 'textbox', 'table'];
-  const chartSubTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
-
+  const chartSubTypes = [ 'line'];
+//'bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie
   const getUserId = () => {
     return localStorage.getItem('user_id') || 'guest';
   };
@@ -207,8 +207,8 @@ const ChartDashboard = () => {
 
               {chartSubTypes.includes(chart.type) && (
                 <>
-                  {chart.type === 'line' && <Test />}
-                  <input
+                  
+                  {/* <input
                     className="border p-2 w-full mb-2"
                     type="text"
                     placeholder="Labels (comma-separated)"
@@ -221,11 +221,11 @@ const ChartDashboard = () => {
                     placeholder="Values (comma-separated)"
                     value={chart.data.values?.join(',') || ''}
                     onChange={(e) => updateChartData(index, 'values', e.target.value)}
-                  />
+                  /> */}
                   <div className="w-full flex items-center justify-center overflow-hidden">
                     <div className="w-full h-full">
                       {chart.type === 'bar' && <Bar data={getChartData(chart)} />}
-                      {chart.type === 'line' && <Line data={getChartData(chart)} />}
+                       {chart.type === 'line' && <Test />}
                       {chart.type === 'doughnut' && <Doughnut data={getChartData(chart)} />}
                       {chart.type === 'radar' && <Radar data={getChartData(chart)} />}
                       {chart.type === 'polar' && <PolarArea data={getChartData(chart)} />}
@@ -303,6 +303,11 @@ const ChartDashboard = () => {
                 ))}
               </select>
             )}
+           {
+            primaryType==='chart' && !chartSubType && (
+              <input placeholder='enter function name '  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+            )
+           }
 
             {(primaryType === 'textbox' || primaryType === 'table') && (
               <button

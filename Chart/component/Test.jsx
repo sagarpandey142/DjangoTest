@@ -51,7 +51,8 @@ function App() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Live Stats</h2>
       {chartData ? (
-        <Line data={chartData} />
+        <Line data={chartData}  options={{ responsive: true }}
+   />
       ) : (
         <p>Loading chart...</p>
       )}
