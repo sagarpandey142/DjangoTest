@@ -63,16 +63,12 @@ app.post("/register", async (req, res) => {
 });
 
 app.get("/innerflap-min-chart", async (req, res) => {
-    const { val1, val2 } = req.query;
-
-    if (!val1 || !val2) {
-        return res.status(400).json({ error: "val1 and val2 query parameters are required." });
-    }
+   
 
     try {
         const result = await client.query(
-            `SELECT get_innerflap_min_chart_json2($1::float, $2::float) AS data`,
-            [parseFloat(val1), parseFloat(val2)]
+            `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
+            
         );
         res.json({ result: result.rows[0].data });
     } catch (error) {
