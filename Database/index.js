@@ -62,20 +62,44 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.get("/innerflap-min-chart", async (req, res) => {
+// app.get("/innerflap-min-chart", async (req, res) => {
    
 
-    try {
-        const result = await client.query(
-            `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
+//     try {
+//         const result = await client.query(
+//             `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
             
-        );
-        res.json({ result: result.rows[0].data });
+//         );
+//         res.json({ result: result.rows[0].data });
+//     } catch (error) {
+//         console.error("Error calling function:", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// });
+app.get("/:functionName", async (req, res) => {
+    const { functionName } = req.params;
+  
+    try {
+      // Example validation: check if function exists (replace with actual validation logic)
+      const functions = {
+        'exampleFunction': async () => ({
+          labels: ['January', 'February', 'March', 'April'],
+          values: [12, 19, 3, 5],
+        }),
+      };
+  
+      const func = functions[functionName];
+      if (!func) {
+        return res.status(404).json({ message: 'Function not found' });
+      }
+  
+      const data = await func();
+      res.json(data);
     } catch (error) {
-        console.error("Error calling function:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error fetching data:", error);
+      res.status(500).json({ message: 'Error fetching data' });
     }
-});
+  });
 
 app.post("/login", async (req, res) => {
     const { user_id, password } = req.body;

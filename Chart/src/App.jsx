@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from '../component/Login';
-import Dashboard from "../component/Test"
+import Dashboard from "../component/Testing"
 import Chart from "../component/Dashboard"
 
 function App() {
@@ -9,8 +9,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/Chart" element={<Chart />} />
+        <Route path="/dashboard" element={<Chart />} />
+       
       </Routes>
     </Router>
   );
