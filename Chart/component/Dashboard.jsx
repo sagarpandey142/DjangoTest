@@ -15,10 +15,11 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTrash } from 'react-icons/fa'; // Delete icon added here
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import axios from 'axios';
+import Test from "./Test";
 
 ChartJS.register(
   CategoryScale,
@@ -46,7 +47,7 @@ const ChartDashboard = () => {
   const chartSubTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 
   const getUserId = () => {
-    return localStorage.getItem('user_id') || 'guest'; // fallback to 'guest' if not set
+    return localStorage.getItem('user_id') || 'guest';
   };
 
   useEffect(() => {
@@ -72,7 +73,6 @@ const ChartDashboard = () => {
   const fetchCharts = async (userId) => {
     try {
       const res = await axios.get(`${BASE_URL}/layout/${userId}`);
-      console.log("res",res)
       return res.data?.charts?.items || [];
     } catch (err) {
       console.error("Fetch error:", err);
@@ -142,6 +142,12 @@ const ChartDashboard = () => {
     saveCharts(updated);
   };
 
+  const deleteChart = (index) => {
+    const updated = charts.filter((_, i) => i !== index);
+    setCharts(updated);
+    saveCharts(updated);
+  };
+
   const getChartData = (chart) => ({
     labels: chart.data.labels,
     datasets: [{
@@ -165,7 +171,7 @@ const ChartDashboard = () => {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className=" max-w-screen-xl " ref={containerRef}>
+      <div className="max-w-screen-xl" ref={containerRef}>
         <GridLayout
           className="layout"
           layout={charts.map((chart, i) => ({
@@ -185,6 +191,8 @@ const ChartDashboard = () => {
               key={index.toString()}
               className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
             >
+            
+
               {chart.type === '' && (
                 <select
                   onChange={(e) => selectChartType(index, e.target.value)}
@@ -199,6 +207,7 @@ const ChartDashboard = () => {
 
               {chartSubTypes.includes(chart.type) && (
                 <>
+                  {chart.type === 'line' && <Test />}
                   <input
                     className="border p-2 w-full mb-2"
                     type="text"
