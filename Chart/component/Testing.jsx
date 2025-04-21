@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GridLayout from 'react-grid-layout';
-import {
-  Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie,
-} from 'react-chartjs-2';
+import { Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,7 +31,6 @@ ChartJS.register(
 );
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const userId = import.meta.env.VITE_userId;
 
 const ChartDashboard = () => {
   const [charts, setCharts] = useState([]);
@@ -41,14 +38,20 @@ const ChartDashboard = () => {
   const [primaryType, setPrimaryType] = useState('');
   const [chartSubType, setChartSubType] = useState('');
   const [width, setWidth] = useState(1200);
+  const [liveChartData, setLiveChartData] = useState(null);
   const containerRef = useRef(null);
 
   const primaryTypes = ['chart', 'textbox', 'table'];
   const chartSubTypes = ['bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie'];
 
+  const getUserId = () => {
+    return localStorage.getItem('user_id') || 'guest'; // fallback to 'guest' if not set
+  };
+
   useEffect(() => {
     const loadCharts = async () => {
-      const saved = await fetchCharts(userId);
+      const uid = getUserId();
+      const saved = await fetchCharts(uid);
       setCharts(saved);
     };
     loadCharts();
@@ -65,6 +68,28 @@ const ChartDashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      axios.get(`${BASE_URL}/innerflap-min-chart`).then((res) => {
+        const { datasets, labels } = res.data.result;
+        const coloredDatasets = datasets.map((ds, i) => ({
+          ...ds,
+          borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
+          backgroundColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
+          tension: 0.3,
+          fill: false,
+        }));
+
+        setLiveChartData({
+          labels,
+          datasets: coloredDatasets,
+        });
+      });
+    }, 1000); // Update every 1 second
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, []);
+
   const fetchCharts = async (userId) => {
     try {
       const res = await axios.get(`${BASE_URL}/layout/${userId}`);
@@ -77,6 +102,7 @@ const ChartDashboard = () => {
 
   const saveCharts = async (charts) => {
     try {
+      const userId = getUserId();
       const payload = {
         charts: { items: charts },
         data: {},
@@ -100,7 +126,7 @@ const ChartDashboard = () => {
     }
     const updated = [...charts, ...newItems];
     setCharts(updated);
-    saveCharts(updated);
+    saveCharts(updated); // Save updated charts
     setPrimaryType('');
     setChartSubType('');
     setShowDropdown(false);
@@ -159,7 +185,7 @@ const ChartDashboard = () => {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className=" max-w-screen-xl " ref={containerRef}>
+      <div className="max-w-screen-xl" ref={containerRef}>
         <GridLayout
           className="layout"
           layout={charts.map((chart, i) => ({
@@ -175,15 +201,9 @@ const ChartDashboard = () => {
           onLayoutChange={handleLayoutChange}
         >
           {charts.map((chart, index) => (
-            <div
-              key={index.toString()}
-              className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
-            >
+            <div key={index.toString()} className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden">
               {chart.type === '' && (
-                <select
-                  onChange={(e) => selectChartType(index, e.target.value)}
-                  className="border p-2 rounded w-full mb-2"
-                >
+                <select onChange={(e) => selectChartType(index, e.target.value)} className="border p-2 rounded w-full mb-2">
                   <option value="">Select Chart Type</option>
                   {[...chartSubTypes, 'textbox', 'table'].map((type) => (
                     <option key={type} value={type}>{type}</option>
@@ -257,54 +277,23 @@ const ChartDashboard = () => {
             </div>
           ))}
         </GridLayout>
+      </div>
 
-        {showDropdown ? (
-          <div className="mt-4">
-            {!primaryType && (
-              <select
-                value={primaryType}
-                onChange={(e) => setPrimaryType(e.target.value)}
-                className="border p-2 rounded mr-2"
-              >
-                <option value="">Select Type</option>
-                {primaryTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            )}
+      <div className="p-4 text-center">
+        <button
+          className="flex items-center justify-center bg-blue-500 text-white px-4 py-2 rounded-lg"
+          onClick={() => setShowDropdown(!showDropdown)}
+        >
+          <FaPlus className="mr-2" />
+          Add New
+        </button>
 
-            {primaryType === 'chart' && !chartSubType && (
-              <select
-                value={chartSubType}
-                onChange={(e) => {
-                  setChartSubType(e.target.value);
-                  addChart(e.target.value);
-                }}
-                className="border p-2 rounded"
-              >
-                <option value="">Select Chart Type</option>
-                {chartSubTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            )}
-
-            {(primaryType === 'textbox' || primaryType === 'table') && (
-              <button
-                onClick={() => addChart(primaryType)}
-                className="bg-green-500 text-white px-4 py-2 rounded ml-2"
-              >
-                Add {primaryType}
-              </button>
-            )}
+        {showDropdown && (
+          <div className="absolute bg-white shadow-md mt-2 w-48 rounded-md">
+            <div className="px-4 py-2 cursor-pointer hover:bg-gray-200" onClick={() => addChart('chart')}>Chart</div>
+            <div className="px-4 py-2 cursor-pointer hover:bg-gray-200" onClick={() => addChart('textbox')}>Textbox</div>
+            <div className="px-4 py-2 cursor-pointer hover:bg-gray-200" onClick={() => addChart('table')}>Table</div>
           </div>
-        ) : (
-          <button
-            onClick={() => setShowDropdown(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded flex mt-4"
-          >
-            <FaPlus className="mr-2" /> Add
-          </button>
         )}
       </div>
     </div>
