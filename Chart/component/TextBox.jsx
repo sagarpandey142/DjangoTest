@@ -22,41 +22,41 @@ ChartJS.register(
 
 function Textbox({ functionName }) {
   const [Data, setData] = useState(null);
-  const BASE_URL = import.meta.env.VITE_BASE_URL; // Dynamically use the base URL
+  const BASE_URL = import.meta.env.VITE_BASE_URL; 
   const [destructuredValues, setDestructuredValues] = useState({ functionName: null, params: [] });
 
-  // Extracting functionName and parameters dynamically from the input
+  
   useEffect(() => {
     if (!functionName) return;
 
-    const match = functionName.match(/\(([^)]+)\)/); // Get content inside parentheses
+    const match = functionName.match(/\(([^)]+)\)/); 
     if (match) {
-      const params = match[1].split(',').map(param => param.trim()); // Split into array of parameters
-      const pureFunctionName = functionName.split('(')[0]; // Extract function name before '('
+      const params = match[1].split(',').map(param => param.trim()); 
+      const pureFunctionName = functionName.split('(')[0];
       setDestructuredValues({ functionName: pureFunctionName, params });
     }
   }, [functionName]);
 
-  // Fetching data based on function name and dynamic parameters
+ 
   useEffect(() => {
     if (!destructuredValues.functionName || destructuredValues.params.length === 0) return;
 
     const intervalId = setInterval(() => {
-      // Dynamically construct the URL by removing the static part and appending function name and parameters
+    
       const dynamicURL = `${BASE_URL}/testing/${destructuredValues.functionName}/${destructuredValues.params.join('/')}`;
         
       axios.get(dynamicURL).then((res) => {
        
            console.log("text",res)
            setData(res.data.result)
-        // Map colors or any other styling options
+        
        
       }).catch(error => {
         console.error("Error fetching chart data:", error);
       });
-    }, 1000); // 1000ms = 1 second interval for live updates
+    }, 1000); 
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    return () => clearInterval(intervalId); 
   }, [destructuredValues]);
 
   return (

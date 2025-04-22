@@ -33,18 +33,18 @@ function App({ functionName, deleteChart, index }) {
   useEffect(() => {
     if (!functionName) return;
 
-    const match = functionName.match(/\(([^)]+)\)/); // Get content inside parentheses
+    const match = functionName.match(/\(([^)]+)\)/); 
     if (match) {
-      const params = match[1].split(',').map(param => param.trim()); // Split parameters
-      const pureFunctionName = functionName.split('(')[0]; // Get function name before '('
+      const params = match[1].split(',').map(param => param.trim());
+      const pureFunctionName = functionName.split('(')[0]; 
       setDestructuredValues({ functionName: pureFunctionName, params });
     }
   }, [functionName]);
 
-  // Cleanup on unmount
+  
   useEffect(() => {
     return () => {
-      isMountedRef.current = false; // When component unmounts, mark it
+      isMountedRef.current = false;
     };
   }, []);
 
@@ -52,14 +52,14 @@ function App({ functionName, deleteChart, index }) {
     if (!destructuredValues.functionName || destructuredValues.params.length === 0) return;
 
     const intervalId = setInterval(() => {
-      // Dynamically construct the URL
+     
       const dynamicURL = `${BASE_URL}/testing/${destructuredValues.functionName}/${destructuredValues.params.join('/')}`;
 
       axios.get(dynamicURL).then((res) => {
        
         const { datasets, labels } = res.data.result;
         
-        // Map colors or any other styling options
+      
         const coloredDatasets = datasets?.map((ds, i) => ({
           ...ds,
           borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
@@ -75,9 +75,9 @@ function App({ functionName, deleteChart, index }) {
       }).catch(error => {
         console.error("Error fetching chart data:", error);
       });
-    }, 1000); // 1000ms = 1 second interval for live updates
+    }, 1000); 
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    return () => clearInterval(intervalId); 
   }, [destructuredValues]);
 
   return (
