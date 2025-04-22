@@ -194,7 +194,11 @@ const ChartDashboard = () => {
     saveCharts(updated);
   };
   useEffect(()=>{
-      fetchtext()
+    const interval = setInterval(() => {
+      fetchtext();
+    }, 1000); 
+  
+    return () => clearInterval(interval);
   },[])
   console.log("charts",charts)
   return (
