@@ -115,10 +115,10 @@ const ChartDashboard = () => {
     if (chartSubTypes.includes(type)) {
       newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} ,functionName:data});
     } else if (type === 'textbox') {
-      newItems.push({ type, data: { textValue:'' }, size: 'bigger', groupId, layout: {}});
+      newItems.push({ type, data: { textValue:'' }, size: 'bigger', groupId, layout: {},functionName:data});
 
     } else if (type === 'table') {
-      newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {} });
+      newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {},functionName:data });
     }
     const updated = [...charts, ...newItems];
     setCharts(updated);
@@ -214,12 +214,26 @@ const ChartDashboard = () => {
           width={width}
           onLayoutChange={handleLayoutChange}
         >
+       
           {charts.map((chart, index) => (
             <div
               key={index.toString()}
-              className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
+              className="border-2 border-black p-4 rounded-lg  bg-white overflow-hidden relative"
             >
-            
+           <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent.stopImmediatePropagation();
+                  deleteChart(index);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+               
+                title="Delete chart"
+              >
+                <FaTrash size={12} />
+              </button>
+             
               {chart.type === '' && (
                 <select
                   onChange={(e) => selectChartType(index, e.target.value)}
@@ -231,7 +245,7 @@ const ChartDashboard = () => {
                   ))}
                 </select>
               )}
-
+           
               {chartSubTypes.includes(chart.type) && (
                 <>
                   
@@ -331,21 +345,29 @@ const ChartDashboard = () => {
               </select>
             )}
            {
-            primaryType==='chart' && !chartSubType && (
+            primaryType==='chart' && primaryType==='textbox'&& primaryType==='table' && !chartSubType && (
               <input placeholder='enter function name ' onChange={(e)=>{
                  setdata(e.target.value)
               }}  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
             )
            }
 
-            {(primaryType === 'textbox' || primaryType === 'table') && (
-              <button
-                onClick={() => addChart(primaryType)}
-                className="bg-green-500 text-white px-4 py-2 rounded ml-2"
-              >
-                Add {primaryType}
-              </button>
+           {(primaryType === 'textbox' || primaryType === 'table') && (
+              <div className="flex items-center mt-2">
+                <button
+                  onClick={() => addChart(primaryType)}
+                  className="bg-green-500 text-white px-4 py-2 rounded ml-2"
+                >
+                  Add {primaryType}
+                </button>
+                <input
+                  placeholder="Enter function name"
+                  onChange={(e) => setdata(e.target.value)}
+                  className="border border-gray-300 ml-2 p-2 rounded-md w-[30%] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
             )}
+
           </div>
         ) : (
           <button

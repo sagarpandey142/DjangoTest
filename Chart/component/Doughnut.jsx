@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Doughnut, Line } from "react-chartjs-2";
 import {FaTrash} from "react-icons/fa"
+
 import {
+
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -24,6 +26,7 @@ ChartJS.register(
 function App({functionName,deleteChart,index}) {
   const [chartData, setChartData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const isMountedRef = useRef(true);
   const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
   console.log("fu",functionName)
    useEffect(() => {
@@ -37,6 +40,13 @@ function App({functionName,deleteChart,index}) {
       }
     }, [functionName]);
    
+    useEffect(() => {
+      return () => {
+        isMountedRef.current = false; // when component unmounts, mark it
+      };
+    }, []);
+
+    
   useEffect(() => {
     const intervalId = setInterval(() => {
       axios.get(`${BASE_URL}/get_gauge_graph/${destructuredValues.value1?? 0}/${destructuredValues.value2 ?? 100}`).then((res) => {
@@ -62,18 +72,12 @@ function App({functionName,deleteChart,index}) {
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [destructuredValues]);
 
+  
+
   return (
     <div className="p-6 relative">
       <h2 className="text-2xl font-bold mb-4">Live Stats</h2>
-      {/* 🗑 Delete button */}
-      {/* <button
-        className="absolute top-4 right-4 bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-full "
-        onClick={(e) => {
-            e.stopPropagation()
-            deleteChart(index)}}
-      >
-        <FaTrash />
-      </button> */}
+     
       {chartData ? (
         <Doughnut height={900} width={720} data={chartData}  options={{ responsive: true }}
    />
