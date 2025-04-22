@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Line } from "react-chartjs-2";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,7 +24,7 @@ function App({functionName}) {
   const [chartData, setChartData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
-  console.log("fu",functionName)
+ 
    useEffect(() => {
       if (!functionName) return;
     
@@ -38,11 +38,13 @@ function App({functionName}) {
    
   useEffect(() => {
     const intervalId = setInterval(() => {
-      axios.get(`${BASE_URL}/innerflap-min-chart/${destructuredValues.value1?? 11}/${destructuredValues.value2 ?? 13}`).then((res) => {
-        const { datasets, labels } = res.data.result;
+      axios.get(`${BASE_URL}/get_bar_chart_json/${destructuredValues.value1?? 0}/${destructuredValues.value2 ?? 100}`).then((res) => {
+        const { datasets, labels } = res.data?.result?.rows[0]?.get_bar_chart_json
 
+        ;
+       
         // Map colors or any other styling options
-        const coloredDatasets = datasets.map((ds, i) => ({
+        const coloredDatasets = datasets?.map((ds, i) => ({
           ...ds,
           borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
           backgroundColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
@@ -54,8 +56,8 @@ function App({functionName}) {
           labels,
           datasets: coloredDatasets,
         });
-      });
-    }, 1000); // 5000ms = 5 seconds
+       });
+     }, 1000); // 5000ms = 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [destructuredValues]);
@@ -63,10 +65,8 @@ function App({functionName}) {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Live Stats</h2>
-      
       {chartData ? (
-        
-        <Line data={chartData}  options={{ responsive: true }}
+        <Bar  data={chartData}  options={{ responsive: true }}
    />
       ) : (
         <p>Loading chart...</p>

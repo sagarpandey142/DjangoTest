@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GridLayout from 'react-grid-layout';
 import {
-  Bar, Line, Doughnut, Radar, PolarArea, Bubble, Pie,
+   Line, Radar, PolarArea, Bubble, Pie,
 } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -20,6 +20,8 @@ import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import axios from 'axios';
 import Test from "./Test";
+import  Doughnut  from './Doughnut';
+import Bar from "./Bar"
 
 ChartJS.register(
   CategoryScale,
@@ -44,9 +46,9 @@ const ChartDashboard = () => {
   const containerRef = useRef(null);
   const[data,setdata]=useState();
   const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
-
+  const[text,SetText]=useState()
   const primaryTypes = ['chart', 'textbox', 'table'];
-  const chartSubTypes = [ 'line'];
+  const chartSubTypes = [ 'line', 'doughnut','bar'];
 //'bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie
   const getUserId = () => {
     return localStorage.getItem('user_id') || 'guest';
@@ -85,7 +87,7 @@ const ChartDashboard = () => {
   const fetchCharts = async (userId) => {
     try {
       const res = await axios.get(`${BASE_URL}/layout/${userId}`);
-      console.log("re",res)
+    
       return res.data?.charts?.items || [];
     } catch (err) {
       console.error("Fetch error:", err);
@@ -113,7 +115,7 @@ const ChartDashboard = () => {
     if (chartSubTypes.includes(type)) {
       newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} ,functionName:data});
     } else if (type === 'textbox') {
-
+      newItems.push({ type, data: { textValue:'' }, size: 'bigger', groupId, layout: {}});
 
     } else if (type === 'table') {
       newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {} });
@@ -157,6 +159,7 @@ const ChartDashboard = () => {
   };
 
   const deleteChart = (index) => {
+    console.log("index")
     const updated = charts.filter((_, i) => i !== index);
     setCharts(updated);
     saveCharts(updated);
@@ -174,7 +177,14 @@ const ChartDashboard = () => {
       ],
     }],
   });
-
+  const fetchtext=async ()=>{
+   const result=await  axios.get(`${BASE_URL}/get_text_value/`)
+    console.log("res",result)
+    console.log("daa",result.data.result.rows[0].get_text_value)
+    SetText(result.data.result.rows[0].get_text_value)
+     
+  }
+ 
   const handleLayoutChange = (layout) => {
     const updated = charts.map((chart, index) => {
       const l = layout.find((lay) => lay.i === index.toString());
@@ -183,7 +193,10 @@ const ChartDashboard = () => {
     setCharts(updated);
     saveCharts(updated);
   };
-
+  useEffect(()=>{
+      fetchtext()
+  },[])
+  console.log("charts",charts)
   return (
     <div className="w-full overflow-x-auto">
       <div className="max-w-screen-xl" ref={containerRef}>
@@ -207,7 +220,6 @@ const ChartDashboard = () => {
               className="border-2 border-black p-4 rounded-lg relative bg-white overflow-hidden"
             >
             
-
               {chart.type === '' && (
                 <select
                   onChange={(e) => selectChartType(index, e.target.value)}
@@ -239,9 +251,9 @@ const ChartDashboard = () => {
                   /> */}
                   <div className="w-full flex items-center justify-center overflow-hidden">
                     <div className="w-full h-full">
-                      {chart.type === 'bar' && <Bar data={getChartData(chart)} />}
+                      {chart.type === 'bar' && <Bar functionName={chart?.functionName}/>}
                        {chart.type === 'line' && <Test functionName={chart?.functionName} />}
-                      {chart.type === 'doughnut' && <Doughnut data={getChartData(chart)} />}
+                      {chart.type === 'doughnut' && <Doughnut functionName={chart?.functionName} deleteChart={deleteChart} index={index} />}
                       {chart.type === 'radar' && <Radar data={getChartData(chart)} />}
                       {chart.type === 'polar' && <PolarArea data={getChartData(chart)} />}
                       {chart.type === 'bubble' && <Bubble data={getChartData(chart)} />}
@@ -255,7 +267,7 @@ const ChartDashboard = () => {
                 <textarea
                   className="border p-2 w-full h-full resize-none"
                   placeholder="Write something here..."
-                  value={chart.data.text}
+                  value={text}
                   onChange={(e) => updateTextbox(index, e.target.value)}
                 />
               )}

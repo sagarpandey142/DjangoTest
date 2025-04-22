@@ -91,6 +91,73 @@ app.get("/innerflap-min-chart/:param1/:param2", async (req, res) => {
     }
 });
 
+app.get("/get_gauge_graph/:param1/:param2", async (req, res) => {
+    const { param1, param2 } = req.params;
+    try {
+        const result = await client.query(
+            `SELECT get_gauge_graph('InnerFlap_MAX', '192.168.1.14', $1, $2);`,
+            [param1, param2]
+        );
+        
+        res.json({ result: result });
+    } catch (error) {
+        console.error("Error calling function:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/get_bar_chart_json/:param1/:param2", async (req, res) => {
+    const { param1, param2 } = req.params;
+    try {
+        const result = await client.query(
+            `select get_bar_chart_json('192.168.1.14', 'InnerFlap_MAX', $1,$2);`,
+            [param1, param2]
+        );
+        
+        res.json({ result: result });
+    } catch (error) {
+        console.error("Error calling function:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/get_text_value", async (req, res) => {
+    const { param1, param2 } = req.params;
+    try {
+        const result = await client.query(
+            `SELECT get_text_value('192.168.1.14','InnerFlap_MAX')`,
+           
+        );
+        
+        res.json({ result: result });
+    } catch (error) {
+        console.error("Error calling function:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+app.get("/get_table_value", async (req, res) => {
+    try {
+      const result = await client.query(`
+        SELECT get_table_data(
+          542,
+          '2025-04-21 08:00:00',
+          '2025-04-21 09:00:00',
+          'InnerFlap_MAX',  
+          2.0,
+          4.5
+        );
+      `);
+  
+      res.json({ result });
+    } catch (error) {
+      console.error("Error calling get_table_data:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+  
+
+
 
 app.post("/login", async (req, res) => {
     const { user_id, password } = req.body;
