@@ -20,25 +20,32 @@ ChartJS.register(
   Legend
 );
 
-function App({functionName}) {
+function App({ functionName }) {
   const [chartData, setChartData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
-  console.log("fu",functionName)
-   useEffect(() => {
-      if (!functionName) return;
-    
-      const match = functionName.match(/\(([^)]+)\)/); // get content inside parentheses
-      if (match) {
-        const numbers = match[1].split(',').map(num => parseInt(num.trim(), 10));
-        const [value1, value2] = numbers;
-        setDestructuredValues({ value1, value2 });
-      }
-    }, [functionName]);
-   
+  const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null, functionName: null });
+
+  // Extract function name and parameters dynamically from the function string
   useEffect(() => {
+    if (!functionName) return;
+
+    const match = functionName.match(/\(([^)]+)\)/); // Get content inside parentheses
+    if (match) {
+      const params = match[1].split(',').map(param => param.trim()); // Split parameters
+      const pureFunctionName = functionName.split('(')[0]; // Get function name before '('
+      setDestructuredValues({ functionName: pureFunctionName, params });
+    }
+  }, [functionName]);
+
+  // Fetching data based on function name and dynamic parameters
+  useEffect(() => {
+    if (!destructuredValues.functionName || destructuredValues.params.length === 0) return;
+
     const intervalId = setInterval(() => {
-      axios.get(`${BASE_URL}/innerflap-min-chart/${destructuredValues.value1?? 11}/${destructuredValues.value2 ?? 13}`).then((res) => {
+      // Dynamically construct the URL
+      const dynamicURL = `${BASE_URL}/testing/${destructuredValues.functionName}/${destructuredValues.params.join('/')}`;
+
+      axios.get(dynamicURL).then((res) => {
         const { datasets, labels } = res.data.result;
 
         // Map colors or any other styling options
@@ -54,8 +61,10 @@ function App({functionName}) {
           labels,
           datasets: coloredDatasets,
         });
+      }).catch(error => {
+        console.error("Error fetching chart data:", error);
       });
-    }, 1000); // 5000ms = 5 seconds
+    }, 1000); // 1000ms = 1 second interval for live updates
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [destructuredValues]);
@@ -63,11 +72,8 @@ function App({functionName}) {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Live Stats</h2>
-      
       {chartData ? (
-        
-        <Line data={chartData}  options={{ responsive: true }}
-   />
+        <Line data={chartData} options={{ responsive: true }} />
       ) : (
         <p>Loading chart...</p>
       )}

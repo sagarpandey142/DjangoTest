@@ -15,6 +15,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import Textbox from "./TextBox"
 import { FaPlus, FaTrash } from 'react-icons/fa'; // Delete icon added here
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -282,12 +283,7 @@ const ChartDashboard = () => {
               )}
 
               {chart.type === 'textbox' && (
-                <textarea
-                  className="border p-2 w-full h-full resize-none"
-                  placeholder="Write something here..."
-                  value={text}
-                  onChange={(e) => updateTextbox(index, e.target.value)}
-                />
+               <Textbox functionName={chart.functionName}/>
               )}
 
               {chart.type === 'table' && (
@@ -349,7 +345,7 @@ const ChartDashboard = () => {
               </select>
             )}
            {
-            primaryType==='chart' && primaryType==='textbox'&& primaryType==='table' && !chartSubType && (
+            primaryType==='chart'  && !chartSubType && (
               <input placeholder='enter function name ' onChange={(e)=>{
                  setdata(e.target.value)
               }}  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>

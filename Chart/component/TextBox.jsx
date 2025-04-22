@@ -20,8 +20,8 @@ ChartJS.register(
   Legend
 );
 
-function App({ functionName }) {
-  const [chartData, setChartData] = useState(null);
+function Textbox({ functionName }) {
+  const [Data, setData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL; // Dynamically use the base URL
   const [destructuredValues, setDestructuredValues] = useState({ functionName: null, params: [] });
 
@@ -46,21 +46,11 @@ function App({ functionName }) {
       const dynamicURL = `${BASE_URL}/testing/${destructuredValues.functionName}/${destructuredValues.params.join('/')}`;
         
       axios.get(dynamicURL).then((res) => {
-        const { datasets, labels } = res.data?.result;
-           console.log("res",res)
+       
+           console.log("text",res)
+           setData(res.data.result)
         // Map colors or any other styling options
-        const coloredDatasets = datasets?.map((ds, i) => ({
-          ...ds,
-          borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
-          backgroundColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],
-          tension: 0.3,
-          fill: false,
-        }));
-
-        setChartData({
-          labels,
-          datasets: coloredDatasets,
-        });
+       
       }).catch(error => {
         console.error("Error fetching chart data:", error);
       });
@@ -71,14 +61,14 @@ function App({ functionName }) {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Live Stats</h2>
-      {chartData ? (
-        <Bar data={chartData} options={{ responsive: true }} />
-      ) : (
-        <p>Loading chart...</p>
-      )}
+      <textarea
+                  className="border p-2 w-full h-full resize-none"
+                  placeholder="Write something here..."
+                  value={Data}
+                //   onChange={(e) => updateTextbox(index, e.target.value)}
+                />
     </div>
   );
 }
 
-export default App;
+export default Textbox;

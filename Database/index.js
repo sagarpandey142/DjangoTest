@@ -62,20 +62,20 @@ app.post("/register", async (req, res) => {
     }
 });
 
-// app.get("/innerflap-min-chart", async (req, res) => {
+app.get("/innerflap-min-chart", async (req, res) => {
    
 
-//     try {
-//         const result = await client.query(
-//             `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
+    try {
+        const result = await client.query(
+            `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
             
-//         );
-//         res.json({ result: result.rows[0].data });
-//     } catch (error) {
-//         console.error("Error calling function:", error);
-//         res.status(500).json({ error: "Internal Server Error" });
-//     }
-// });
+        );
+        res.json({ result: result.rows[0].data });
+    } catch (error) {
+        console.error("Error calling function:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 app.get("/innerflap-min-chart/:param1/:param2", async (req, res) => {
     const { param1, param2 } = req.params;
@@ -84,6 +84,38 @@ app.get("/innerflap-min-chart/:param1/:param2", async (req, res) => {
             `SELECT get_innerflap_min_chart_json2($1, $2) AS data`,
             [param1, param2]
         );
+        res.json({ result: result.rows[0].data });
+    } catch (error) {
+        console.error("Error calling function:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// app.get("/testing/:functionName/:param1/:param2", async (req, res) => {
+//     const { functionName, param1, param2 } = req.params;
+
+
+//     try {
+//         const queryStr = `SELECT ${functionName}($1, $2) AS data`;
+//         const result = await client.query(queryStr, [param1, param2]);
+//         res.json({ result: result.rows[0].data });
+//     } catch (error) {
+//         console.error("Error calling function:", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// });
+
+app.get("/testing/:functionName/*", async (req, res) => {
+    const functionName = req.params.functionName;
+    const fullPath = req.path.split('/');
+    const paramsStartIndex = fullPath.indexOf(functionName) + 1;
+    const params = fullPath.slice(paramsStartIndex);
+
+    try {
+        const placeholders = params.map((_, index) => `$${index + 1}`).join(", ");
+        const queryStr = `SELECT ${functionName}(${placeholders}) AS data`;
+
+        const result = await client.query(queryStr, params);
         res.json({ result: result.rows[0].data });
     } catch (error) {
         console.error("Error calling function:", error);
@@ -125,7 +157,7 @@ app.get("/get_text_value", async (req, res) => {
     const { param1, param2 } = req.params;
     try {
         const result = await client.query(
-            `SELECT get_text_value('192.168.1.14','InnerFlap_MAX')`,
+            ` SELECT get_text_value('192.168.1.14','InnerFlap_MAX')`,
            
         );
         
