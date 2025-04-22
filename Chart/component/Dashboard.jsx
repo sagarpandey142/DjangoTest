@@ -345,7 +345,7 @@ const ChartDashboard = () => {
               </select>
             )}
            {
-            primaryType==='chart'  && !chartSubType && (
+            primaryType==='chart' && !chartSubType && (
               <input placeholder='enter function name ' onChange={(e)=>{
                  setdata(e.target.value)
               }}  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
