@@ -42,6 +42,8 @@ const ChartDashboard = () => {
   const [chartSubType, setChartSubType] = useState('');
   const [width, setWidth] = useState(1200);
   const containerRef = useRef(null);
+  const[data,setdata]=useState();
+  const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
 
   const primaryTypes = ['chart', 'textbox', 'table'];
   const chartSubTypes = [ 'line'];
@@ -49,7 +51,17 @@ const ChartDashboard = () => {
   const getUserId = () => {
     return localStorage.getItem('user_id') || 'guest';
   };
-
+  useEffect(() => {
+    if (!data) return;
+  
+    const match = data.match(/\(([^)]+)\)/); // get content inside parentheses
+    if (match) {
+      const numbers = match[1].split(',').map(num => parseInt(num.trim(), 10));
+      const [value1, value2] = numbers;
+      setDestructuredValues({ value1, value2 });
+    }
+  }, [data]);
+  
   useEffect(() => {
     const loadCharts = async () => {
       const uid = getUserId();
@@ -73,6 +85,7 @@ const ChartDashboard = () => {
   const fetchCharts = async (userId) => {
     try {
       const res = await axios.get(`${BASE_URL}/layout/${userId}`);
+      console.log("re",res)
       return res.data?.charts?.items || [];
     } catch (err) {
       console.error("Fetch error:", err);
@@ -98,9 +111,10 @@ const ChartDashboard = () => {
     const groupId = Date.now();
     let newItems = [];
     if (chartSubTypes.includes(type)) {
-      newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} });
+      newItems.push({ type, data: { labels: [], values: [] }, size: 'bigger', groupId, layout: {} ,functionName:data});
     } else if (type === 'textbox') {
-      newItems.push({ type, data: { text: '' }, size: 'bigger', groupId, layout: {} });
+
+
     } else if (type === 'table') {
       newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {} });
     }
@@ -147,6 +161,7 @@ const ChartDashboard = () => {
     setCharts(updated);
     saveCharts(updated);
   };
+  console.log("daa",data)
 
   const getChartData = (chart) => ({
     labels: chart.data.labels,
@@ -225,7 +240,7 @@ const ChartDashboard = () => {
                   <div className="w-full flex items-center justify-center overflow-hidden">
                     <div className="w-full h-full">
                       {chart.type === 'bar' && <Bar data={getChartData(chart)} />}
-                       {chart.type === 'line' && <Test />}
+                       {chart.type === 'line' && <Test functionName={chart?.functionName} />}
                       {chart.type === 'doughnut' && <Doughnut data={getChartData(chart)} />}
                       {chart.type === 'radar' && <Radar data={getChartData(chart)} />}
                       {chart.type === 'polar' && <PolarArea data={getChartData(chart)} />}
@@ -305,7 +320,9 @@ const ChartDashboard = () => {
             )}
            {
             primaryType==='chart' && !chartSubType && (
-              <input placeholder='enter function name '  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
+              <input placeholder='enter function name ' onChange={(e)=>{
+                 setdata(e.target.value)
+              }}  className="border border-gray-300 ml-2 p-2 rounded-md w-30% mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400"/>
             )
            }
 

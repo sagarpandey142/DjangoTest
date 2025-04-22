@@ -20,12 +20,25 @@ ChartJS.register(
   Legend
 );
 
-function App() {
+function App({functionName}) {
   const [chartData, setChartData] = useState(null);
   const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
+  console.log("fu",functionName)
+   useEffect(() => {
+      if (!functionName) return;
+    
+      const match = functionName.match(/\(([^)]+)\)/); // get content inside parentheses
+      if (match) {
+        const numbers = match[1].split(',').map(num => parseInt(num.trim(), 10));
+        const [value1, value2] = numbers;
+        setDestructuredValues({ value1, value2 });
+      }
+    }, [functionName]);
+    console.log("destru",destructuredValues)
   useEffect(() => {
     const intervalId = setInterval(() => {
-      axios.get(`${BASE_URL}/innerflap-min-chart`).then((res) => {
+      axios.get(`${BASE_URL}/innerflap-min-chart/${destructuredValues.value1?? 11}/${destructuredValues.value2 ?? 13}`).then((res) => {
         const { datasets, labels } = res.data.result;
 
         // Map colors or any other styling options
@@ -45,7 +58,7 @@ function App() {
     }, 1000); // 5000ms = 5 seconds
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, []);
+  }, [destructuredValues]);
 
   return (
     <div className="p-6">

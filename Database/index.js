@@ -62,13 +62,27 @@ app.post("/register", async (req, res) => {
     }
 });
 
-app.get("/innerflap-min-chart", async (req, res) => {
+// app.get("/innerflap-min-chart", async (req, res) => {
    
 
+//     try {
+//         const result = await client.query(
+//             `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
+            
+//         );
+//         res.json({ result: result.rows[0].data });
+//     } catch (error) {
+//         console.error("Error calling function:", error);
+//         res.status(500).json({ error: "Internal Server Error" });
+//     }
+// });
+
+app.get("/innerflap-min-chart/:param1/:param2", async (req, res) => {
+    const { param1, param2 } = req.params;
     try {
         const result = await client.query(
-            `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
-            
+            `SELECT get_innerflap_min_chart_json2($1, $2) AS data`,
+            [param1, param2]
         );
         res.json({ result: result.rows[0].data });
     } catch (error) {
@@ -76,6 +90,7 @@ app.get("/innerflap-min-chart", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 app.post("/login", async (req, res) => {
     const { user_id, password } = req.body;
