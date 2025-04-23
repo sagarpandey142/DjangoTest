@@ -24,6 +24,7 @@ import Test from "./Test";
 import  Doughnut  from './Doughnut';
 import Bar from "./Bar"
 import Table from './Table';
+import Image from "./Image"
 
 ChartJS.register(
   CategoryScale,
@@ -49,7 +50,7 @@ const ChartDashboard = () => {
   const[data,setdata]=useState();
   const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null });
   const[text,SetText]=useState()
-  const primaryTypes = ['chart', 'textbox', 'table'];
+  const primaryTypes = ['chart', 'textbox', 'table','image'];
   const chartSubTypes = [ 'line', 'doughnut','bar'];
 //'bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie
   const getUserId = () => {
@@ -120,6 +121,9 @@ const ChartDashboard = () => {
       newItems.push({ type, data: { textValue:'' }, size: 'bigger', groupId, layout: {},functionName:data});
 
     } else if (type === 'table') {
+      newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {},functionName:data });
+    }
+    else if (type === 'image') {
       newItems.push({ type, data: { rows: [['', ''], ['', '']] }, size: 'bigger', groupId, layout: {},functionName:data });
     }
     const updated = [...charts, ...newItems];
@@ -290,6 +294,9 @@ const ChartDashboard = () => {
               {chart.type === 'table' && (
                 <Table functionName={chart.functionName}/>
               )}
+              {chart.type === 'image' && (
+                <Image functionName={chart.functionName}/>
+              )}
             </div>
           ))}
         </GridLayout>
@@ -332,7 +339,7 @@ const ChartDashboard = () => {
             )
            }
 
-           {(primaryType === 'textbox' || primaryType === 'table') && (
+           {(primaryType === 'textbox' || primaryType === 'table' || primaryType==='image') && (
               <div className="flex items-center mt-2">
                 <button
                   onClick={() => addChart(primaryType)}
