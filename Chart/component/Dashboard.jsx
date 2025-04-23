@@ -23,6 +23,7 @@ import axios from 'axios';
 import Test from "./Test";
 import  Doughnut  from './Doughnut';
 import Bar from "./Bar"
+import Table from './Table';
 
 ChartJS.register(
   CategoryScale,
@@ -287,28 +288,7 @@ const ChartDashboard = () => {
               )}
 
               {chart.type === 'table' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full border border-gray-400">
-                    <tbody>
-                      {chart.data.rows.map((row, rowIndex) => (
-                        <tr key={rowIndex}>
-                          {row.map((cell, colIndex) => (
-                            <td key={colIndex} className="border border-gray-400">
-                              <input
-                                type="text"
-                                className="p-2 w-full"
-                                value={cell}
-                                onChange={(e) =>
-                                  updateTableCell(index, rowIndex, colIndex, e.target.value)
-                                }
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <Table functionName={chart.functionName}/>
               )}
             </div>
           ))}

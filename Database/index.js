@@ -67,7 +67,7 @@ app.get("/innerflap-min-chart", async (req, res) => {
 
     try {
         const result = await client.query(
-            `SELECT get_innerflap_min_chart_json2(11,13) AS data`,
+            `SELECT  get_table_data('camera_data') AS data`,
             
         );
         res.json({ result: result.rows[0].data });
@@ -114,8 +114,10 @@ app.get("/testing/:functionName/*", async (req, res) => {
     try {
         const placeholders = params.map((_, index) => `$${index + 1}`).join(", ");
         const queryStr = `SELECT ${functionName}(${placeholders}) AS data`;
-
+         
         const result = await client.query(queryStr, params);
+        
+          
         res.json({ result: result.rows[0].data });
     } catch (error) {
         console.error("Error calling function:", error);
