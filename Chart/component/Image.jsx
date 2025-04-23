@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 function App({ functionName }) {
   const [imagePath, setImagePath] = useState("");
-
+  console.log("image",imagePath)
   useEffect(() => {
     if (functionName) {
       
@@ -10,7 +10,7 @@ function App({ functionName }) {
 
      
       relativePath = relativePath.replace(/\\/g, "/");
-
+    console.log("relativepath",relativePath)
      
       setImagePath(`/${relativePath}`);
     }
