@@ -25,6 +25,7 @@ import  Doughnut  from './Doughnut';
 import Bar from "./Bar"
 import Table from './Table';
 import Image from "./Image"
+import Moal from "./Moal"
 import ShowFullImages from "./ShowFullImage"
 
 ChartJS.register(
@@ -53,6 +54,9 @@ const ChartDashboard = () => {
   const[text,SetText]=useState()
   const primaryTypes = ['chart', 'textbox', 'table','image','images'];
   const chartSubTypes = [ 'line', 'doughnut','bar'];
+  const [showModal, setShowModal] = useState(false);
+const [modalImage, setModalImage] = useState(null);
+
 //'bar', 'line', 'doughnut', 'radar', 'polar', 'bubble', 'pie
   const getUserId = () => {
     return localStorage.getItem('user_id') || 'guest';
@@ -223,6 +227,7 @@ const ChartDashboard = () => {
             w: chart.layout?.w ?? 6,
             h: chart.layout?.h ?? 8,
           }))}
+          
           cols={12}
           rowHeight={30}
           width={width}
@@ -291,6 +296,8 @@ const ChartDashboard = () => {
                 </>
               )}
 
+             
+
               {chart.type === 'textbox' && (
                <Textbox functionName={chart.functionName}/>
               )}
@@ -302,7 +309,7 @@ const ChartDashboard = () => {
                 <Image functionName={chart.functionName}/>
               )}
               {chart.type === 'images' && (
-                <ShowFullImages functionName={chart.functionName}/>
+                <ShowFullImages functionName={chart.functionName} setShowModal={setShowModal} setModalImage={setModalImage}/>
               )}
             </div>
           ))}
@@ -322,6 +329,8 @@ const ChartDashboard = () => {
                 ))}
               </select>
             )}
+            {showModal==true && <Moal image={modalImage} onClose={() => setShowModal(false)} />}
+
 
             {primaryType === 'chart' && !chartSubType && (
               <select
