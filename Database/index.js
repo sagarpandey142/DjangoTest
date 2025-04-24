@@ -71,6 +71,52 @@ function getImagesRecursively(dir) {
     return images;
   }
   
+  app.post("/all-images", (req, res) => {
+    try {
+      const { path: folderPath } = req.body;
+  
+      if (!folderPath || !fs.existsSync(folderPath)) {
+        return res.status(400).json({ error: "Invalid or missing path" });
+      }
+  
+      const getImages = (dir) => {
+        let images = [];
+  
+        const items = fs.readdirSync(dir);
+        items.forEach(item => {
+          const fullPath = path.join(dir, item);
+          const stats = fs.statSync(fullPath);
+  
+          if (stats.isFile() && /\.(jpg|jpeg|png|gif)$/i.test(item)) {
+            const fileData = fs.readFileSync(fullPath);
+            const base64 = fileData.toString('base64');
+            const ext = path.extname(item).slice(1).toLowerCase();
+            const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+            
+            images.push({
+              mtime: stats.mtime.getTime(),
+              src: `data:${mimeType};base64,${base64}`,
+              name: item
+            });
+          }
+        });
+  
+        return images;
+      };
+  
+      const images = getImages(folderPath);
+      if (images.length === 0) {
+        return res.status(404).json({ error: "No images found." });
+      }
+  
+      res.json({ images });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Something went wrong." });
+    }
+  });
+  
+  
   app.post("/latest-image", (req, res) => {
     try {
         const { path: folderPath } = req.body;

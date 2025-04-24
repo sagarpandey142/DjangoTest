@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 function App({ functionName }) {
   const [imageUrl, setImageUrl] = useState("");
-  
+  const [lastFolderName, setLastFolderName] = useState("");
   
   useEffect(() => {
     if (!functionName) return;
@@ -10,6 +10,12 @@ function App({ functionName }) {
     let relativePath = functionName.replace(/^.*?(CameraFails)/, "$1");
   relativePath = relativePath.replace(/\\/g, "/");
   const basePath = "C:/" + relativePath;
+  const parts = functionName.split(/[/\\]/);
+ 
+   const lastFolder = parts[parts.length - 1];
+
+  setLastFolderName(lastFolder);
+
 
     const fetchImage = () => {
      
@@ -44,9 +50,10 @@ function App({ functionName }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Latest Image from Folder</h1>
+      <h1 className="text-xl font-bold mb-4">Latest Image from Folder :{lastFolderName}</h1>
+     
       {imageUrl ? (
-        <img src={imageUrl} alt="Latest" className="w-64 h-auto border rounded" />
+        <img src={imageUrl} alt="Latest" className=" border rounded" />
       ) : (
         <p className="text-red-500">Loading.</p>
       )}
