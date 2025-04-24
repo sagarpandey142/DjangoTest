@@ -28,7 +28,6 @@ function App({ functionName, deleteChart, index }) {
   const isMountedRef = useRef(true);
   const [destructuredValues, setDestructuredValues] = useState({ value1: null, value2: null, functionName: null });
 
-  console.log("fu", functionName);
 
   useEffect(() => {
     if (!functionName) return;

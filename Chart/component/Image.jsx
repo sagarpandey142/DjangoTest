@@ -1,25 +1,46 @@
 import { useEffect, useState } from "react";
 
 function App({ functionName }) {
-  const [imagePath, setImagePath] = useState("");
-  console.log("image",imagePath)
+  const [imageUrl, setImageUrl] = useState("");
+ 
   useEffect(() => {
     if (functionName) {
-      
-      let relativePath = functionName.replace(/^.*?CameraFails/, "CameraFails");
-
-     
+      let relativePath = functionName.replace(/^.*?(CameraFails)/, "$1");
       relativePath = relativePath.replace(/\\/g, "/");
-    console.log("relativepath",relativePath)
-     
-      setImagePath(`/${relativePath}`);
+      const basePath = "C:/" + relativePath.split("/")[0]; 
+        
+      fetch("http://localhost:5000/latest-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ path: basePath }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Image not found");
+          }
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        })
+        .catch((err) => {
+          console.error(err);
+          setImageUrl(""); 
+        });
     }
   }, [functionName]);
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Image from Public Folder</h1>
-      {imagePath && <img src={imagePath} alt="Dynamic" className="w-64 h-auto" />}
+      <h1 className="text-xl font-bold mb-4">Latest Image from Folder</h1>
+      {imageUrl ? (
+        <img src={imageUrl} alt="Latest" className="w-64 h-auto border rounded" />
+      ) : (
+        <p className="text-red-500">No image found or error fetching image.</p>
+      )}
     </div>
   );
 }

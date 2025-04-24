@@ -47,8 +47,7 @@ function App({ functionName }) {
         
       axios.get(dynamicURL).then((res) => {
         const { datasets, labels } = res.data?.result;
-           console.log("res",res)
-        // Map colors or any other styling options
+      
         const coloredDatasets = datasets?.map((ds, i) => ({
           ...ds,
           borderColor: ["#36a2eb", "#4bc0c0", "#ff6384"][i % 3],

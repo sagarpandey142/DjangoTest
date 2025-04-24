@@ -1,6 +1,8 @@
 
 require("dotenv").config();
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
 const cors = require("cors");
 const { Client } = require("pg");
 
@@ -44,6 +46,53 @@ client.connect()
 const isValidJsonObject = (obj) => {
     return typeof obj === "object" && obj !== null && !Array.isArray(obj);
 };
+
+// const IMAGE_DIR = "C:/CameraFails/";
+
+function getImagesRecursively(dir) {
+    let images = [];
+  
+    const items = fs.readdirSync(dir);
+  
+    items.forEach(item => {
+      const fullPath = path.join(dir, item);
+      const stats = fs.statSync(fullPath);
+  
+      if (stats.isDirectory()) {
+        images = images.concat(getImagesRecursively(fullPath));
+      } else if (stats.isFile() && /\.(jpg|jpeg|png|gif)$/i.test(item)) {
+        images.push({
+          path: fullPath,
+          mtime: stats.mtime.getTime(),
+        });
+      }
+    });
+  
+    return images;
+  }
+  
+  app.post("/latest-image", (req, res) => {
+    try {
+        const { path: folderPath } = req.body;
+
+        if (!folderPath || !fs.existsSync(folderPath)) {
+          return res.status(400).json({ error: "Invalid or missing path" });
+        }
+      const images = getImagesRecursively(folderPath);
+   console.log("imge",folderPath)
+      if (images.length === 0) {
+        return res.status(404).json({ error: "No images found." });
+      }
+  
+     
+      const latestImage = images.sort((a, b) => b.mtime - a.mtime)[0];
+  
+      res.sendFile(latestImage.path);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Something went wrong." });
+    }
+  });
 
 app.post("/register", async (req, res) => {
     const { user_id, password } = req.body;

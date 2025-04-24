@@ -47,7 +47,7 @@ function Table({ functionName }) {
         
       axios.get(dynamicURL).then((res) => {
        
-           console.log("text",res)
+          
            setData(res.data.result)
         
        

@@ -16,7 +16,7 @@ import {
   Legend,
 } from 'chart.js';
 import Textbox from "./TextBox"
-import { FaPlus, FaTrash } from 'react-icons/fa'; // Delete icon added here
+import { FaPlus, FaTrash } from 'react-icons/fa'; 
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import axios from 'axios';
@@ -59,7 +59,7 @@ const ChartDashboard = () => {
   useEffect(() => {
     if (!data) return;
   
-    const match = data.match(/\(([^)]+)\)/); // get content inside parentheses
+    const match = data.match(/\(([^)]+)\)/); 
     if (match) {
       const numbers = match[1].split(',').map(num => parseInt(num.trim(), 10));
       const [value1, value2] = numbers;
@@ -165,12 +165,12 @@ const ChartDashboard = () => {
   };
 
   const deleteChart = (index) => {
-    console.log("index")
+
     const updated = charts.filter((_, i) => i !== index);
     setCharts(updated);
     saveCharts(updated);
   };
-  console.log("daa",data)
+ 
 
   const getChartData = (chart) => ({
     labels: chart.data.labels,
@@ -185,8 +185,6 @@ const ChartDashboard = () => {
   });
   const fetchtext=async ()=>{
    const result=await  axios.get(`${BASE_URL}/get_text_value/`)
-    console.log("res",result)
-    console.log("daa",result.data.result.rows[0].get_text_value)
     SetText(result.data.result.rows[0].get_text_value)
      
   }
@@ -206,7 +204,7 @@ const ChartDashboard = () => {
   
     return () => clearInterval(interval);
   },[])
-  console.log("charts",charts)
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="max-w-screen-xl" ref={containerRef}>
