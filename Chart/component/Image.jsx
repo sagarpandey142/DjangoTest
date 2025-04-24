@@ -20,6 +20,7 @@ function App({ functionName }) {
         body: JSON.stringify({ path: basePath }),
       })
         .then((res) => {
+           console.log("photo",res)
           if (!res.ok) throw new Error("Image not found");
           return res.blob();
         })

@@ -46,8 +46,19 @@ function App({ functionName }) {
       const dynamicURL = `${BASE_URL}/testing/${destructuredValues.functionName}/${destructuredValues.params.join('/')}`;
 
       axios.get(dynamicURL).then((res) => {
-        const { datasets, labels } = res.data.result;
+        let result = res.data?.result;
 
+        
+        if (typeof result === "string") {
+          try {
+            result = JSON.parse(result);
+          } catch (err) {
+            console.error("Failed to parse chart data JSON:", err);
+            return;
+          }
+        }
+    
+        const { labels, datasets } = result;
       
         const coloredDatasets = datasets.map((ds, i) => ({
           ...ds,
