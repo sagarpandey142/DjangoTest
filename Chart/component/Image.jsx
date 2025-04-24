@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 
 function App({ functionName }) {
   const [imageUrl, setImageUrl] = useState("");
-
+  
+  
   useEffect(() => {
     if (!functionName) return;
 
     let relativePath = functionName.replace(/^.*?(CameraFails)/, "$1");
-    relativePath = relativePath.replace(/\\/g, "/");
-    const basePath = "C:/" + relativePath.split("/")[0];
+  relativePath = relativePath.replace(/\\/g, "/");
+  const basePath = "C:/" + relativePath;
 
     const fetchImage = () => {
      

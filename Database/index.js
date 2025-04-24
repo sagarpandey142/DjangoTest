@@ -74,7 +74,7 @@ function getImagesRecursively(dir) {
   app.post("/latest-image", (req, res) => {
     try {
         const { path: folderPath } = req.body;
-
+        
         if (!folderPath || !fs.existsSync(folderPath)) {
           return res.status(400).json({ error: "Invalid or missing path" });
         }

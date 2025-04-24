@@ -205,6 +205,8 @@ const ChartDashboard = () => {
     return () => clearInterval(interval);
   },[])
 
+ 
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="max-w-screen-xl" ref={containerRef}>
