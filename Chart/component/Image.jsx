@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 
 function App({ functionName }) {
   const [imageUrl, setImageUrl] = useState("");
- 
+
   useEffect(() => {
-    if (functionName) {
-      let relativePath = functionName.replace(/^.*?(CameraFails)/, "$1");
-      relativePath = relativePath.replace(/\\/g, "/");
-      const basePath = "C:/" + relativePath.split("/")[0]; 
-        
+    if (!functionName) return;
+
+    let relativePath = functionName.replace(/^.*?(CameraFails)/, "$1");
+    relativePath = relativePath.replace(/\\/g, "/");
+    const basePath = "C:/" + relativePath.split("/")[0];
+
+    const fetchImage = () => {
+     
       fetch("http://localhost:5000/latest-image", {
         method: "POST",
         headers: {
@@ -17,9 +20,7 @@ function App({ functionName }) {
         body: JSON.stringify({ path: basePath }),
       })
         .then((res) => {
-          if (!res.ok) {
-            throw new Error("Image not found");
-          }
+          if (!res.ok) throw new Error("Image not found");
           return res.blob();
         })
         .then((blob) => {
@@ -27,10 +28,16 @@ function App({ functionName }) {
           setImageUrl(url);
         })
         .catch((err) => {
-          console.error(err);
-          setImageUrl(""); 
+          console.error("Fetch error:", err);
+          setImageUrl("");
         });
-    }
+    };
+
+   
+    fetchImage();
+    const interval = setInterval(fetchImage, 1000); 
+
+    return () => clearInterval(interval); 
   }, [functionName]);
 
   return (
