@@ -49,50 +49,130 @@ const isValidJsonObject = (obj) => {
 
 // const IMAGE_DIR = "C:/CameraFails/";
 
-function getImagesRecursively(dir) {
-    let images = [];
+// function getImagesRecursively(dir) {
+//     let images = [];
   
-    const items = fs.readdirSync(dir);
+//     const items = fs.readdirSync(dir);
+  
+//     items.forEach(item => {
+//       const fullPath = path.join(dir, item);
+//       const stats = fs.statSync(fullPath);
+  
+//       if (stats.isDirectory()) {
+//         images = images.concat(getImagesRecursively(fullPath));
+//       } else if (stats.isFile() && /\.(jpg|jpeg|png|gif)$/i.test(item)) {
+//         images.push({
+//           path: fullPath,
+//           mtime: stats.mtime.getTime(),
+//         });
+//       }
+//     });
+  
+//     return images;
+//   }
+  
+//   app.post("/latest-image", (req, res) => {
+//     try {
+//         const { path: folderPath } = req.body;
+
+//         if (!folderPath || !fs.existsSync(folderPath)) {
+//           return res.status(400).json({ error: "Invalid or missing path" });
+//         }
+//       const images = getImagesRecursively(folderPath);
+//    console.log("imge",folderPath)
+//       if (images.length === 0) {
+//         return res.status(404).json({ error: "No images found." });
+//       }
+  
+     
+//       const latestImage = images.sort((a, b) => b.mtime - a.mtime)[0];
+  
+//       res.sendFile(latestImage.path);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ error: "Something went wrong." });
+//     }
+//   });
+
+
+
+
+
+
+function getValidDateFolders(dir) {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  const items = fs.readdirSync(dir);
+  return items.filter(item => {
+    const fullPath = path.join(dir, item);
+    const stats = fs.statSync(fullPath);
+    return stats.isDirectory() && dateRegex.test(item);  
+  });
+}
+
+
+function getImagesRecursively(dir) {
+  let images = [];
+  
+  const validFolders = getValidDateFolders(dir); 
+  validFolders.forEach(folder => {
+    const dateFolderPath = path.join(dir, folder);  
+
+    const items = fs.readdirSync(dateFolderPath);
   
     items.forEach(item => {
-      const fullPath = path.join(dir, item);
+      const fullPath = path.join(dateFolderPath, item);
       const stats = fs.statSync(fullPath);
-  
+
+     
       if (stats.isDirectory()) {
-        images = images.concat(getImagesRecursively(fullPath));
-      } else if (stats.isFile() && /\.(jpg|jpeg|png|gif)$/i.test(item)) {
-        images.push({
-          path: fullPath,
-          mtime: stats.mtime.getTime(),
+        const folderItems = fs.readdirSync(fullPath);
+        folderItems.forEach(folderItem => {
+          const folderItemPath = path.join(fullPath, folderItem);
+          const folderItemStats = fs.statSync(folderItemPath);
+
+         
+          if (folderItemStats.isFile() && /\.(jpg|jpeg|png|gif)$/i.test(folderItem)) {
+            images.push({
+              path: folderItemPath,
+              mtime: folderItemStats.mtime.getTime(),
+            });
+          }
         });
       }
     });
-  
-    return images;
-  }
-  
-  app.post("/latest-image", (req, res) => {
-    try {
-        const { path: folderPath } = req.body;
-
-        if (!folderPath || !fs.existsSync(folderPath)) {
-          return res.status(400).json({ error: "Invalid or missing path" });
-        }
-      const images = getImagesRecursively(folderPath);
-   console.log("imge",folderPath)
-      if (images.length === 0) {
-        return res.status(404).json({ error: "No images found." });
-      }
-  
-     
-      const latestImage = images.sort((a, b) => b.mtime - a.mtime)[0];
-  
-      res.sendFile(latestImage.path);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Something went wrong." });
-    }
   });
+
+  return images;
+}
+
+
+app.post("/latest-image", (req, res) => {
+  try {
+    const { path: folderPath } = req.body;
+
+    if (!folderPath || !fs.existsSync(folderPath)) {
+      return res.status(400).json({ error: "Invalid or missing path" });
+    }
+
+    
+    const images = getImagesRecursively(folderPath);
+    
+
+    if (images.length === 0) {
+      return res.status(404).json({ error: "No images found." });
+    }
+
+   
+    const latestImage = images.sort((a, b) => b.mtime - a.mtime)[0];
+
+    res.sendFile(latestImage.path);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong." });
+  }
+});
+
+
 
 app.post("/register", async (req, res) => {
     const { user_id, password } = req.body;
