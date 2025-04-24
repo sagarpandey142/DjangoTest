@@ -20,7 +20,7 @@ function App({ functionName }) {
         body: JSON.stringify({ path: basePath }),
       })
         .then((res) => {
-           console.log("photo",res)
+          
           if (!res.ok) throw new Error("Image not found");
           return res.blob();
         })
@@ -47,7 +47,7 @@ function App({ functionName }) {
       {imageUrl ? (
         <img src={imageUrl} alt="Latest" className="w-64 h-auto border rounded" />
       ) : (
-        <p className="text-red-500">No image found or error fetching image.</p>
+        <p className="text-red-500">Loading.</p>
       )}
     </div>
   );
